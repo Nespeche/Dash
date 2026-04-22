@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+.git/
+__pycache__/
+*.pyc
+ventas_import.sql
+ventas_incremental.sql
+ventas_incremental_fingerprint.txt
+ventas_incremental_note.txt
+wrangler_incremental_check.tmp

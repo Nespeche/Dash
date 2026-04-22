@@ -1,0 +1,60 @@
+name              = "ventas-d1-api-proyeccion-v2"
+main              = "worker.js"
+compatibility_date = "2026-03-21"
+
+[[d1_databases]]
+binding     = "DB"
+database_name = "ventas-d1-proyeccion-v2"
+database_id = "eecf46a5-f61e-4174-b951-4b67e0f3f752"
+
+[ai]
+binding = "AI"
+
+# v30: opcional - habilitá búsqueda semántica de clientes/productos.
+# Pasos:
+#   1) wrangler vectorize create ventas-clientes  --dimensions=768 --metric=cosine
+#   2) wrangler vectorize create ventas-productos --dimensions=768 --metric=cosine
+#   3) Descomentá los bloques de abajo
+#   4) wrangler deploy
+#   5) Hacer un POST inicial a /api/vectorize/reindex {"type":"clientes"} y {"type":"productos"}
+#
+ [[vectorize]]
+ binding    = "VECTORIZE_CLIENTES"
+ index_name = "ventas-clientes"
+
+ [[vectorize]]
+ binding    = "VECTORIZE_PRODUCTOS"
+ index_name = "ventas-productos"
+#
+# v30: opcional - sobreescribir modelo IA sin redeploy
+# [vars]
+# AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+
+# =============================================================================
+# v31 — Configuración opcional
+# =============================================================================
+
+# v31: Cron trigger para tareas programadas (ingesta nocturna, reportes, alertas)
+# Descomentá para activar. El handler scheduled() está en src/worker/app.js
+# [triggers]
+# crons = [ "0 3 * * *" ]   # Todos los días a las 3:00 AM UTC
+
+# v31: Sentry para captura de errores (opcional)
+# Si no se define SENTRY_DSN, el código es un no-op, no falla.
+# [vars]
+# SENTRY_DSN = "https://xxxxx@oYYY.ingest.sentry.io/ZZZ"
+# SENTRY_ENV = "production"
+
+# v31: Analytics Engine para métricas custom del asistente IA (opcional)
+# Plan free: 10M writes/mes. Zero-cost si no se configura el binding.
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "ventas_dash_analytics"
+
+# v31: Resend para envío de emails (opcional)
+# Plan free: 100 mails/día, 3.000/mes. Si no están configuradas las
+# variables, el endpoint /api/email/report responde 502 con mensaje claro.
+# [vars]
+# RESEND_API_KEY = "re_xxxxxxxxxxxxxxxxxxxx"
+# RESEND_FROM    = "ventas@tudominio.com"
+# RESEND_TO      = "coord@empresa.com"

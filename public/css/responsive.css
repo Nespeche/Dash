@@ -1,0 +1,2064 @@
+/* =============================================================================
+   RESPONSIVE.CSS v42 — Mobile UX Upgrade
+   
+   REGLAS DE ORO:
+   ─ Desktop (≥861px) = INTACTO. Cero cambios intencionales.
+   ─ Todo cambio vive dentro de breakpoints mobile/tablet.
+   ─ Se reusan tokens del sistema (tokens.css) siempre que existe.
+   ─ No !important salvo conflictos documentados con ui-v35 y styles.css.
+   ─ No librerías nuevas. CSS puro.
+   
+   BREAKPOINTS CANÓNICOS (tokens.css v41):
+     xs   ≤479px   Mobile portrait
+     sm   480-767  Mobile landscape + tablet pequeña
+     md   768-1023 Tablet portrait
+     lg   1024-1279 Notebook
+     xl   ≥1280    Desktop wide
+   ============================================================================= */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SCROLL HINT EN TABLAS Y STRIPS
+   Actúa globalmente cuando JS añade .has-h-overflow
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.tw { position: relative; }
+.tw::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, var(--surf));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  border-radius: 0 var(--rad-lg) var(--rad-lg) 0;
+}
+.tw.has-h-overflow::after { opacity: 1; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MOBILE XS: ≤479px — Portrait
+   Dispositivos: iPhone SE (375), iPhone 14 (390), Pixel (412)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 479px) {
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     HEADER: más compacto, eliminar elementos secundarios no críticos
+     Objetivo: reducir de ~46px a ~38px, liberar espacio vertical
+  ──────────────────────────────────────────────────────────────────────────── */
+  .hdr {
+    padding: 8px 12px;
+  }
+  /* Logo: reducir peso tipográfico en mobile */
+  .logo {
+    font-size: 14px;
+    letter-spacing: 0.2px;
+  }
+  /* Status pill: ocultar texto, solo dot (libera ~80px horizontal) */
+  .pill-status {
+    padding: 4px 7px;
+    gap: 0;
+    background: transparent;
+    border-color: transparent;
+  }
+  #stxt { display: none; }
+  /* BCRA pill: ocultar completamente en xs (baja ruido en header) */
+  .bcra-pill { display: none; }
+  /* Theme toggle: reducir padding */
+  .theme-toggle { padding: 4px 6px; font-size: 15px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     FILTER PANEL: ya es bottom-sheet en <600px. Mejorar el disparador.
+     El botón "☰ Mostrar filtros" es el CTA principal de filtrado en mobile.
+  ──────────────────────────────────────────────────────────────────────────── */
+  #btnToggleFilters {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 16px;
+    min-height: 42px;
+    border-radius: 10px;
+    /* Hacer el botón más prominente como CTA de acción */
+    background: var(--acc-soft);
+    border-color: var(--acc-border);
+    color: var(--acc-light);
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .fp-collapsed-note {
+    font-size: 11px;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .fp-note-pill {
+    font-size: 10px;
+    padding: 3px 9px;
+  }
+  /* Controles dentro del sheet: period buttons */
+  .pbtn {
+    min-height: 42px;
+    padding: 0 11px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .btn-xs {
+    min-height: 38px;
+    padding: 7px 13px;
+    font-size: 12px;
+  }
+  select { min-height: 44px; padding: 8px 10px; font-size: 13px; }
+  .date-pair label { font-size: 10px; color: var(--txt-soft); }
+  .date-pair input[type="date"] {
+    min-height: 44px;
+    font-size: 13px;
+    padding: 8px;
+  }
+  .fp-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .fp-top-left { width: 100%; }
+  .fp-main-controls { flex-wrap: wrap; gap: 5px; }
+  .date-pair { flex-wrap: wrap; gap: 5px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     CONTENEDORES: ancho completo, padding ajustado
+  ──────────────────────────────────────────────────────────────────────────── */
+  .wrap,
+  .fp-inner,
+  .page-hero { padding-left: 10px; padding-right: 10px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TABS BAR: altura táctil correcta, font más legible
+  ──────────────────────────────────────────────────────────────────────────── */
+  .tabs-bar { padding: 0 6px; }
+  .tab {
+    min-height: 46px;
+    padding: 10px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     PAGE HERO: ultra-compacto en xs
+     Problema: consumía ~120-180px de fold visible con eyebrow + título grande
+     + copy de 3 líneas + 4 chips en grid 2x2.
+     Solución: reducir todo, ocultar copy, chips en fila scrolleable.
+  ──────────────────────────────────────────────────────────────────────────── */
+  .page-hero {
+    padding: 8px 10px 6px;
+    gap: 4px;
+  }
+  .page-hero-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    margin-bottom: 2px;
+    opacity: 0.7;
+  }
+  .page-hero-title {
+    font-size: 20px;
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+  }
+  /* Ocultar copy descriptivo — el usuario ya sabe para qué es */
+  .page-hero-copy { display: none; }
+
+  /* Hero chips: fila única con scroll horizontal (no grid 2x2) */
+  .page-hero-meta {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 2px;
+    margin-top: 6px;
+    /* Override explícito del grid 2x2 de styles.css @media(max-width:760px) */
+    grid-template-columns: unset !important;
+  }
+  .page-hero-meta::-webkit-scrollbar { display: none; }
+  .hero-chip {
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-height: 32px;
+    padding: 5px 10px;
+    font-size: 10.5px;
+    /* Override de justify-content:center de styles.css */
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+  /* El chip "soft" (Vista general) ya no necesita ser full-width */
+  .hero-chip--soft { grid-column: unset !important; }
+  /* El chip acción (Mostrar/Ocultar filtros) más prominente */
+  .hero-chip--action {
+    font-weight: 700;
+    background: var(--acc-soft) !important;
+    border-color: var(--acc-border) !important;
+    color: var(--acc-light) !important;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     KPI CARDS: grid 2x2, más compactas pero legibles
+     Pain point: kpi-lbl a 9px uppercase casi ilegible; kpi-val 22px ok.
+     Fix: subir label a 10px, mejorar contraste; reducir padding.
+  ──────────────────────────────────────────────────────────────────────────── */
+  .kpi {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+  .kpi-lbl {
+    font-size: 10px;          /* era 9px — mejora contraste y legibilidad */
+    letter-spacing: 0.5px;   /* era .8px — menos tenso */
+    color: var(--txt-soft);   /* era --mut — más legible */
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .kpi-val {
+    font-size: 20px;
+    letter-spacing: -0.8px;
+  }
+  /* Delta % bajo el valor: más compacto */
+  .kpi-delta-wrap { margin-top: 4px; min-height: 16px; }
+  .kpi-delta {
+    font-size: 9.5px;
+    padding: 1px 5px;
+  }
+  /* Sparkline: ocultar en xs para ganar espacio vertical */
+  .kpi-spark-wrap { display: none; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     GRUPO STRIP: tarjetas de familia
+     Pain point: min-width 120px con gap 7px = ~3.5 cards visibles.
+     Las cards activas se destacan; las inactivas tienen poco contraste.
+     Fix: reducir min-width, mejorar gk-pct, mejorar gk-name contraste.
+  ──────────────────────────────────────────────────────────────────────────── */
+  .grupo-strip {
+    gap: 6px;
+    padding-bottom: 8px;
+    /* Padding lateral para que el primer card no quede pegado al borde */
+    padding-left: 0;
+  }
+  .gk {
+    min-width: 108px;
+    max-width: 140px;
+    padding: 9px 11px;
+    border-radius: 10px;
+  }
+  .gk-name {
+    font-size: 9px;
+    max-width: 100%;
+    color: var(--txt-soft);  /* era heredado oscuro — más legible */
+    letter-spacing: 0.4px;
+  }
+  .gk-val {
+    font-size: 17px;
+    letter-spacing: -0.4px;
+  }
+  .gk-pct {
+    font-size: 9px;
+    opacity: 1;              /* era .7 — mejora contraste */
+    color: var(--mut);
+    margin-top: 1px;
+  }
+  .grupo-strip-lbl {
+    font-size: 9px;
+    letter-spacing: 0.6px;
+  }
+  .grupo-strip-hint {
+    font-size: 10.5px;
+    line-height: 1.4;
+    color: var(--mut);
+    margin-bottom: 8px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TABLAS: columnas reducidas, lectura más limpia
+  ──────────────────────────────────────────────────────────────────────────── */
+  /* Tabla Detalle: solo Fecha + Cliente + Kilos */
+  .responsive-stack--detail thead th:nth-child(3),
+  .responsive-stack--detail tbody td:nth-child(3),
+  .responsive-stack--detail tfoot td:nth-child(3),
+  .responsive-stack--detail thead th:nth-child(4),
+  .responsive-stack--detail tbody td:nth-child(4),
+  .responsive-stack--detail tfoot td:nth-child(4),
+  .responsive-stack--detail thead th:nth-child(5),
+  .responsive-stack--detail tbody td:nth-child(5),
+  .responsive-stack--detail tfoot td:nth-child(5) { display: none; }
+
+  /* Tabla Proyección: ocultar Var. Kg y Var. % */
+  .responsive-stack--projection thead th:nth-child(5),
+  .responsive-stack--projection tbody td:nth-child(5),
+  .responsive-stack--projection thead th:nth-child(6),
+  .responsive-stack--projection tbody td:nth-child(6) { display: none; }
+
+  /* Tabla Acumulados: padding más táctil */
+  .acum-table th,
+  .acum-table td { padding: 8px 8px; font-size: 12px; }
+
+  /* Resumen Acumulado: ocultar columnas menos prioritarias */
+  .acsum-table .col-pct-total { display: none; }
+  .acsum-table .col-varkg { display: none; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     DETAIL TOOLBAR (filtros avanzados de la tabla)
+     Pain point: grid 5 columnas en 390px es ilegible.
+  ──────────────────────────────────────────────────────────────────────────── */
+  .detail-toolbar-main {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     PROYECCIÓN: grid hero a 2 columnas
+  ──────────────────────────────────────────────────────────────────────────── */
+  .proj-hero-grid { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     FRECUENCIA: toolbar en columna, controles táctiles
+  ──────────────────────────────────────────────────────────────────────────── */
+  .freq-toolbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 10px;
+  }
+  .freq-toolbar > div { width: 100%; }
+  .freq-mode-btns { width: 100%; display: flex; }
+  .freq-mode-btn {
+    flex: 1;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .freq-view-btns { flex-wrap: wrap; gap: 5px; }
+  .freq-view-btn { min-height: 38px; padding: 6px 12px; font-size: 12px; }
+  .freq-grupo-sel { width: 100%; min-height: 44px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ACUMULADOS: toolbar en columna
+  ──────────────────────────────────────────────────────────────────────────── */
+  .acsum-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 10px;
+  }
+  .acsum-mode-btns,
+  .acsum-view-btns { flex-wrap: wrap; gap: 5px; }
+  .acsum-mode-btn,
+  .acsum-view-btn { min-height: 38px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     AI FAB + PANEL: separar del mobile dock
+  ──────────────────────────────────────────────────────────────────────────── */
+  #aiFab {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 100px) !important;
+    width: 50px !important;
+    height: 50px !important;
+    right: 14px !important;
+  }
+  #aiPanel {
+    right: 8px !important;
+    left: 8px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 160px) !important;
+    width: auto !important;
+    border-radius: 18px !important;
+    /* Altura máxima que deja espacio para el dock */
+    height: min(580px, calc(100vh - 200px)) !important;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     MOBILE DOCK: más compacto y con mejor contraste
+     Pain point: backdrop-filter blur(14px) puede ser pesado en mid-range.
+     Fix: reducir blur sin perder el efecto; mejorar label size.
+  ──────────────────────────────────────────────────────────────────────────── */
+  .mobile-dock {
+    left: calc(env(safe-area-inset-left, 0px) + 10px);
+    right: calc(env(safe-area-inset-right, 0px) + 10px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+    padding: 6px;
+    gap: 6px;
+    backdrop-filter: blur(8px) !important;  /* era 14px — más performante */
+  }
+  .mobile-dock-btn {
+    min-height: 46px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1px;
+    border-radius: 10px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     PADDING INFERIOR: espacio para que el dock no tape último contenido
+  ──────────────────────────────────────────────────────────────────────────── */
+  body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px); }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SEPARACIÓN ENTRE BLOQUES: más ritmo vertical
+     Pain point: bloques de KPIs, grupo strip y tabla se pegan visualmente.
+  ──────────────────────────────────────────────────────────────────────────── */
+  .kpi-row { margin-bottom: 14px; gap: 7px; }
+  .grupo-strip-lbl { margin-bottom: 8px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ERROR BAR: adaptado a xs
+  ──────────────────────────────────────────────────────────────────────────── */
+  .ebar {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+  }
+  .ebar-actions { width: 100%; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     STORY GRID (Gráficos): 1 col en xs
+  ──────────────────────────────────────────────────────────────────────────── */
+  .story-grid { grid-template-columns: 1fr !important; }
+  .charts-grid { grid-template-columns: 1fr !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SM: 480–767px — Mobile landscape + tablet pequeña
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 480px) and (max-width: 767px) {
+
+  /* BCRA: ocultar en sm para liberar header */
+  .bcra-pill { display: none; }
+
+  /* KPI: 4 en una fila */
+  .kpi-val { font-size: 21px; }
+  .kpi-lbl { font-size: 10px; color: var(--txt-soft); }
+
+  /* Sparkline: ocultar en sm también */
+  .kpi-spark-wrap { display: none; }
+
+  /* Hero: copy visible pero compacto */
+  .page-hero-copy { display: block; font-size: 12px; line-height: 1.5; }
+  .page-hero-title { font-size: 22px; }
+
+  /* Hero chips: fila scroll (no grid 2x2) */
+  .page-hero-meta {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 2px;
+    grid-template-columns: unset !important;
+  }
+  .page-hero-meta::-webkit-scrollbar { display: none; }
+  .hero-chip { flex-shrink: 0; white-space: nowrap; }
+  .hero-chip--soft { grid-column: unset !important; }
+
+  /* Tabla Detalle: mostrar Fecha + Cliente + Grupo + Kilos */
+  .responsive-stack--detail thead th:nth-child(4),
+  .responsive-stack--detail tbody td:nth-child(4),
+  .responsive-stack--detail tfoot td:nth-child(4),
+  .responsive-stack--detail thead th:nth-child(5),
+  .responsive-stack--detail tbody td:nth-child(5),
+  .responsive-stack--detail tfoot td:nth-child(5) { display: none; }
+
+  /* Touch targets */
+  .pbtn { min-height: 40px; }
+  .btn-xs { min-height: 36px; }
+  select { min-height: 42px; }
+  .freq-mode-btn { min-height: 42px; }
+
+  /* Acumulados: ocultar Var. Kg */
+  .acsum-table .col-varkg { display: none; }
+
+  /* AI Panel: ancho completo menos márgenes */
+  #aiPanel {
+    right: 10px !important;
+    left: 10px !important;
+    width: auto !important;
+  }
+
+  /* Freq toolbar: wrap natural */
+  .freq-toolbar { flex-wrap: wrap; gap: 10px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MD: 768–1023px — Tablet portrait
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1023px) {
+
+  .wrap, .fp-inner, .page-hero { max-width: 100%; }
+
+  /* Filtros: 4 columnas */
+  .fp-selects { grid-template-columns: repeat(4, 1fr) !important; }
+
+  /* KPI */
+  .kpi-row { gap: 10px; }
+  .kpi { padding: 14px 16px; }
+  .kpi-val { font-size: 24px; }
+  .kpi-lbl { font-size: 10px; color: var(--txt-soft); }
+
+  /* Proyección: 3 cols */
+  .proj-hero-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+
+  /* Tabla detalle: ocultar Cód. Producto */
+  .responsive-stack--detail thead th:nth-child(4),
+  .responsive-stack--detail tbody td:nth-child(4),
+  .responsive-stack--detail tfoot td:nth-child(4) { display: none; }
+
+  /* Story grid: 2 cols */
+  .story-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+  /* Freq: toolbar horizontal */
+  .freq-toolbar { flex-direction: row; flex-wrap: wrap; }
+
+  /* Hero */
+  .page-hero-copy { display: block; font-size: 13px; }
+  .page-hero-title { font-size: 26px; }
+
+  /* Acsum: todas las cols */
+  .acsum-table .col-varkg { display: table-cell; }
+  .acsum-table .col-pct-total { display: table-cell; }
+
+  /* Sin mobile dock */
+  .mobile-dock { display: none !important; }
+  body { padding-bottom: 16px !important; }
+
+  /* AI Panel */
+  #aiPanel {
+    right: 18px !important;
+    left: auto !important;
+    width: min(400px, calc(100vw - 36px)) !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LG: 1024–1279px — Notebook
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) and (max-width: 1279px) {
+
+  .wrap, .fp-inner, .page-hero { max-width: var(--max-w-content); }
+
+  .fp-selects { grid-template-columns: repeat(6, 1fr) !important; }
+  .proj-hero-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+  .story-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+
+  .responsive-stack--detail thead th,
+  .responsive-stack--detail tbody td,
+  .responsive-stack--projection thead th,
+  .responsive-stack--projection tbody td { display: table-cell; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   XL: ≥1280px — Desktop wide
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1280px) {
+
+  .wrap, .fp-inner, .page-hero { max-width: var(--max-w-content-xl); }
+
+  .kpi { padding: 16px 20px; }
+  .kpi-val { font-size: 28px; }
+  .kpi-lbl { font-size: 10px; }
+
+  .proj-hero-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 14px; }
+  .story-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+
+  /* Grupo strip: flex+scroll — no convertir a grid */
+  .grupo-strip { display: flex; overflow-x: auto; gap: 8px; }
+  .gk { max-width: 200px; flex-shrink: 0; }
+
+  .acsum-table .col-varkg { display: table-cell; }
+  .acsum-table .col-pct-total { display: table-cell; }
+
+  .fp-selects { gap: 12px; }
+  #aiPanel { height: min(680px, calc(100vh - 180px)) !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LANDSCAPE MOBILE: ≤500px alto + orientación horizontal
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+
+  .hdr { padding: 5px 14px; }
+  .bcra-pill, .pill-status { display: none; }
+  .page-hero { padding: 5px 12px 5px; }
+  .page-hero-copy { display: none; }
+  .page-hero-title { font-size: 17px; }
+
+  .mobile-dock { display: none !important; }
+  body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important; }
+
+  .kpi-row { grid-template-columns: repeat(4, 1fr) !important; }
+  .kpi { padding: 7px 10px; }
+  .kpi-val { font-size: 17px; }
+  .kpi-spark-wrap { display: none; }
+
+  .tab { padding: 8px 11px; min-height: 38px; }
+  .tabs-bar { padding: 0 6px; }
+
+  #aiFab { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important; }
+  #aiPanel {
+    right: 12px !important;
+    left: 12px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 60px) !important;
+    width: auto !important;
+    height: min(calc(100vh - 80px), 320px) !important;
+    border-radius: 14px !important;
+  }
+  .ai-quick-shell .ai-quick-panel { max-height: 0 !important; opacity: 0 !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MOBILE DOCK: safe areas correctas (aplica a ≤860px donde está visible)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px); }
+  .mobile-dock {
+    left: calc(env(safe-area-inset-left, 0px) + 10px);
+    right: calc(env(safe-area-inset-right, 0px) + 10px);
+  }
+  /* Margen inferior en páginas */
+  #page-detalle .wrap > div:last-child,
+  #page-proyeccion .wrap > div:last-child,
+  #page-acumulados .wrap > div:last-child,
+  #page-frecuencia .wrap > div:last-child,
+  #page-graficos .wrap > div:last-child { margin-bottom: 14px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   TABS BAR MOBILE: overflow fade (complementa design-system.css)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .tabs-bar { padding: 0 6px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media print {
+  .mobile-dock, .tabs-bar, #aiFab, .fp-top { display: none !important; }
+  .wrap { max-width: 100% !important; padding: 0 !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .tw::after { transition: none; }
+  #aiPanel { animation: none !important; }
+  .mobile-dock { backdrop-filter: none !important; background: rgba(13,15,24,.98) !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FIX v42b: TAB TEXT DUPLICATION (data-short + original text)
+   
+   design-system.css adds ::before content from data-short at ≤560px.
+   But .tab-full class doesn't exist in HTML — original "📋 Detalle" text
+   shows simultaneously with the ::before "Detalle".
+   Fix: suppress native button text when data-short is active.
+   Desktop (≥861px) unaffected — data-short is only consumed at ≤560px.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 560px) {
+  /* Hide native button text — only ::before content shows */
+  .tab[data-short] {
+    font-size: 0 !important;        /* collapses "📋 Detalle" */
+    color: transparent !important;
+    gap: 0;
+  }
+  .tab[data-short]::before {
+    font-size: 12px !important;
+    font-weight: 600;
+    color: var(--mut);
+    display: inline-block;
+  }
+  /* Preserve active state color on ::before */
+  .tab[data-short].on::before { color: var(--acc-light) !important; }
+  :root[data-theme="light"] .tab[data-short].on::before { color: var(--acc) !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FIX v42b: TRANSPARENT STICKY COLUMN BLEED-THROUGH
+   
+   projection-hierarchy-table td:first-child has position:sticky;left:0
+   but semi-transparent RGBA backgrounds let scrolled content bleed through.
+   Fix: enforce opaque background on sticky column in mobile.
+   Only applies ≤860px where horizontal scroll is most common.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  /* Solid background base on sticky column — prevents bleed-through */
+  .projection-hierarchy-table td:first-child {
+    background-color: var(--card) !important;
+  }
+  .projection-hierarchy-table th:first-child {
+    background-color: var(--surf) !important;
+  }
+  /* Group rows: teal tint on solid base */
+  .proj-hierarchy-row--group td:first-child {
+    background-color: #163030 !important;  /* dark + teal tint, opaque */
+  }
+  /* Agent rows */
+  .proj-hierarchy-row--agent td:first-child {
+    background-color: #111827 !important;  /* --surf, opaque */
+  }
+  /* Total rows */
+  .proj-hierarchy-row--total td:first-child {
+    background-color: #1e1a0e !important;  /* dark + gold tint, opaque */
+  }
+  /* Summary rows */
+  .projection-family-summary-table .proj-hierarchy-row--summary td:first-child {
+    background-color: #111827 !important;
+  }
+  /* thead: already has rgba(11,18,32,.97) ≈ almost opaque, reinforce */
+  .projection-hierarchy-table thead th {
+    background-color: rgba(11, 18, 32, 1) !important;
+    backdrop-filter: none;   /* backdrop-filter can cause compositing issues on Android */
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FIX v42b: HORIZONTAL OVERFLOW / BLACK SPACE ON RIGHT
+   
+   styles.css sets .tw{overflow:visible} at ≤760px for responsive card layout.
+   But .projection-hierarchy-wrap also has class .tw — it needs overflow:auto
+   to contain horizontal scroll. Override to restore correct behavior.
+   
+   Also restore overflow on acum tables which also use .tw.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 760px) {
+  /* Restore scroll container behavior for horizontal-scroll tables */
+  .tw.projection-hierarchy-wrap {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Ensure the table fills the container width (no black void on right) */
+  .tw.projection-hierarchy-wrap .projection-hierarchy-table {
+    min-width: max(100%, 780px);
+    width: max-content;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   v43 — MOBILE FULL-WIDTH + TABLE SCROLL UNIFICATION
+
+   Objetivo:
+   - Aprovechar mejor el ancho real del celular.
+   - Evitar que el viewport se estire y aparezca banda negra lateral.
+   - Unificar la experiencia de tablas mobile como tablas reales con scroll
+     horizontal dentro de su contenedor, sin tocar desktop.
+   - Reducir chrome vertical y hacer más liviano el dock/FAB en teléfonos.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body,
+  .page,
+  .page.on,
+  .page-hero-shell,
+  .page-hero,
+  .wrap,
+  .hdr,
+  .tabs-bar,
+  .filter-panel,
+  .fp-inner,
+  .card {
+    max-width: 100%;
+  }
+
+  .hdr {
+    padding: 8px 10px !important;
+  }
+
+  .tabs-bar {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .tab {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .fp-inner {
+    padding: 8px 8px 12px !important;
+  }
+
+  .wrap {
+    padding: 10px 8px 14px !important;
+  }
+
+  .page-hero {
+    padding: 10px 8px 8px !important;
+    gap: 8px;
+  }
+
+  .page-hero-title {
+    font-size: clamp(20px, 7vw, 24px) !important;
+    line-height: 1.02;
+  }
+
+  .page-hero-copy {
+    display: none !important;
+  }
+
+  .page-hero-meta {
+    gap: 6px !important;
+    margin-top: 4px;
+  }
+
+  .hero-chip {
+    min-height: 30px;
+    padding: 5px 9px;
+  }
+
+  .card {
+    margin-bottom: 12px;
+    border-radius: 16px;
+  }
+
+  .ch {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .ct {
+    min-width: 0;
+  }
+
+  .cbadge {
+    flex-shrink: 0;
+  }
+
+  .detail-strip-head {
+    gap: 8px;
+  }
+
+  .detail-strip-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .grupo-strip {
+    margin-left: -1px;
+    margin-right: -1px;
+    padding-left: 1px;
+    padding-right: 1px;
+    scroll-padding-left: 8px;
+    scroll-padding-right: 8px;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .gk {
+    min-width: min(42vw, 132px);
+    scroll-snap-align: start;
+  }
+
+  .mobile-dock {
+    left: calc(env(safe-area-inset-left, 0px) + 8px) !important;
+    right: calc(env(safe-area-inset-right, 0px) + 8px) !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 6px) !important;
+    padding: 5px !important;
+    gap: 5px !important;
+  }
+
+  .mobile-dock-btn {
+    min-height: 44px !important;
+    font-size: 10.5px !important;
+    border-radius: 11px !important;
+  }
+
+  #aiFab {
+    right: 10px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 84px) !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  #aiPanel {
+    right: 8px !important;
+    left: 8px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 142px) !important;
+    width: auto !important;
+    height: min(72vh, 580px) !important;
+  }
+
+  /* Todos los wrappers de tablas pasan a comportarse como scrollers reales */
+  .tw,
+  .projection-hierarchy-wrap {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  .tw.has-h-overflow::after {
+    opacity: 0.92;
+  }
+
+  /* Tablas mobile: volver a layout tabular real para una experiencia homogénea */
+  table.responsive-stack,
+  .acsum-table,
+  .freq-table {
+    width: max-content !important;
+    min-width: 640px !important;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  table.responsive-stack thead,
+  .acsum-table thead,
+  .freq-table thead {
+    display: table-header-group !important;
+  }
+
+  table.responsive-stack tbody,
+  table.responsive-stack tfoot,
+  .acsum-table tbody,
+  .acsum-table tfoot,
+  .freq-table tbody,
+  .freq-table tfoot {
+    display: table-row-group !important;
+    padding: 0 !important;
+  }
+
+  table.responsive-stack tr,
+  .acsum-table tr,
+  .freq-table tr {
+    display: table-row !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+
+  table.responsive-stack th,
+  table.responsive-stack td,
+  .acsum-table th,
+  .acsum-table td,
+  .freq-table th,
+  .freq-table td {
+    display: table-cell !important;
+    width: auto !important;
+    white-space: nowrap;
+    vertical-align: middle;
+    padding: 10px 10px !important;
+    border-bottom: 1px solid rgba(148, 163, 184, .14);
+    text-align: left;
+  }
+
+  table.responsive-stack td::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  table.responsive-stack th.r,
+  table.responsive-stack td.r,
+  table.responsive-stack td.num,
+  .acsum-table th.r,
+  .acsum-table td.r,
+  .freq-table th.r,
+  .freq-table td.r {
+    text-align: right !important;
+  }
+
+  table.responsive-stack thead th,
+  .acsum-table thead th,
+  .freq-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: rgba(11, 18, 32, .98) !important;
+    backdrop-filter: none;
+  }
+
+  table.responsive-stack th:first-child,
+  table.responsive-stack td:first-child,
+  .acsum-table th:first-child,
+  .acsum-table td:first-child,
+  .freq-table th:first-child,
+  .freq-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #111827 !important;
+    box-shadow: 1px 0 0 rgba(148, 163, 184, .12);
+  }
+
+  table.responsive-stack thead th:first-child,
+  .acsum-table thead th:first-child,
+  .freq-table thead th:first-child {
+    z-index: 4;
+  }
+
+  table.responsive-stack tr.row-total td {
+    display: table-cell !important;
+    background: rgba(245, 158, 11, .10);
+    font-weight: 700;
+  }
+
+  /* Tablas jerárquicas: más ancho útil y columna fija más estable */
+  .projection-family-summary-note,
+  .projection-hierarchy-toolbar {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .tw.projection-hierarchy-wrap {
+    margin-left: -1px;
+    margin-right: -1px;
+    padding-left: 1px;
+    padding-right: 1px;
+  }
+
+  .tw.projection-hierarchy-wrap .projection-hierarchy-table {
+    width: max-content;
+    min-width: 720px !important;
+  }
+
+  .projection-hierarchy-table th,
+  .projection-hierarchy-table td {
+    white-space: nowrap;
+  }
+
+  .projection-hierarchy-table th:first-child,
+  .projection-hierarchy-table td:first-child {
+    min-width: clamp(176px, 44vw, 228px);
+  }
+}
+
+@media (max-width: 479px) {
+  table.responsive-stack,
+  .acsum-table,
+  .freq-table {
+    min-width: 620px !important;
+  }
+
+  .tw.projection-hierarchy-wrap .projection-hierarchy-table {
+    min-width: 680px !important;
+  }
+
+  .projection-hierarchy-table th:first-child,
+  .projection-hierarchy-table td:first-child {
+    min-width: clamp(160px, 46vw, 208px);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   v44 — MOBILE DATE PICKER + TABLE COLUMN TUNING
+   - Filtro por Fecha con selector calendario en mobile.
+   - Acumulados: columna # minima y segunda columna compacta.
+   - Proyeccion: primera columna jerarquica mas angosta para dar aire a 2025/2026/Var.
+   - Sin impacto intencional en desktop.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .detail-col-menu[data-col-type="date"] {
+    width: min(92vw, 360px) !important;
+    max-width: min(92vw, 360px) !important;
+    overflow: auto;
+  }
+
+  .detail-col-menu[data-col-type="date"] .detail-col-menu__standard-filter {
+    display: none !important;
+  }
+
+  .detail-col-menu[data-col-type="date"] .detail-col-menu__meta {
+    line-height: 1.45;
+  }
+
+  .detail-col-menu[data-col-type="date"] .detail-date-picker {
+    display: grid;
+    gap: 10px;
+  }
+
+  .detail-date-picker__tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detail-date-picker__tab {
+    border: 1px solid rgba(148, 163, 184, .16);
+    border-radius: 999px;
+    background: rgba(30, 41, 59, .56);
+    color: var(--mut);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 7px 10px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .detail-date-picker__tab.is-active {
+    color: var(--acc-light, var(--acc));
+    border-color: rgba(245, 166, 35, .34);
+    background: rgba(245, 166, 35, .12);
+  }
+
+  .detail-date-picker__summary {
+    font-size: 10px;
+    color: var(--mut);
+  }
+
+  .detail-date-picker__panel {
+    display: none;
+  }
+
+  .detail-date-picker__panel.is-active {
+    display: grid;
+    gap: 8px;
+  }
+
+  .detail-date-picker__weekdays,
+  .detail-date-picker__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .detail-date-picker__weekdays span {
+    text-align: center;
+    font-size: 10px;
+    color: var(--mut);
+    font-weight: 700;
+  }
+
+  .detail-date-picker__blank,
+  .detail-date-picker__day {
+    aspect-ratio: 1 / 1;
+    min-height: 34px;
+    border-radius: 10px;
+  }
+
+  .detail-date-picker__blank {
+    background: transparent;
+  }
+
+  .detail-date-picker__day {
+    border: 1px solid rgba(148, 163, 184, .14);
+    background: rgba(15, 23, 42, .48);
+    color: var(--txt);
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .detail-date-picker__day.is-selected {
+    border-color: rgba(245, 166, 35, .42);
+    background: rgba(245, 166, 35, .14);
+    color: var(--acc-light, var(--acc));
+    box-shadow: inset 0 0 0 1px rgba(245, 166, 35, .18);
+  }
+
+  .detail-date-picker__day.is-disabled,
+  .detail-date-picker__day:disabled {
+    opacity: .3;
+    color: rgba(139, 149, 167, .6);
+    background: rgba(15, 23, 42, .22);
+    border-style: dashed;
+  }
+
+  .detail-col-menu[data-col-type="date"] .detail-col-menu__footer {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(13, 15, 24, .68), rgba(13, 15, 24, .98));
+    padding-top: 8px;
+  }
+
+  /* Acumulados: recuperar ancho util para Kilos / % / Dist. */
+  .acum-table {
+    table-layout: fixed;
+    min-width: 560px !important;
+  }
+
+  .acum-table th:first-child,
+  .acum-table td:first-child {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    padding-left: 10px !important;
+    padding-right: 8px !important;
+  }
+
+  .acum-table th:nth-child(2),
+  .acum-table td:nth-child(2) {
+    width: 122px !important;
+    min-width: 122px !important;
+    max-width: 122px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .acum-table th:nth-child(2) {
+    letter-spacing: .5px;
+  }
+
+  .acum-table td:nth-child(2),
+  .acum-table td:nth-child(3),
+  .acum-table td:nth-child(4) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .acum-table th:nth-child(n + 3),
+  .acum-table td:nth-child(n + 3) {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  /* Proyeccion: primera columna mas compacta sin perder lectura */
+  .tw.projection-hierarchy-wrap .projection-hierarchy-table {
+    min-width: 700px !important;
+    table-layout: fixed;
+  }
+
+  .projection-hierarchy-table th:first-child,
+  .projection-hierarchy-table td:first-child {
+    width: 216px !important;
+    min-width: 216px !important;
+    max-width: 216px !important;
+  }
+
+  .projection-family-summary-table th:first-child,
+  .projection-family-summary-table td:first-child {
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+  }
+
+  .projection-hierarchy-table th:not(:first-child),
+  .projection-hierarchy-table td:not(:first-child) {
+    min-width: 96px;
+  }
+
+  .proj-hierarchy-toggle,
+  .proj-hierarchy-name-wrap,
+  .proj-hierarchy-agent-cell {
+    min-width: 0;
+  }
+
+  .proj-hierarchy-name,
+  .proj-hierarchy-agent-code,
+  .proj-hierarchy-agent-sub,
+  .projection-family-summary-table td:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .proj-hierarchy-group-meta {
+    gap: 5px;
+  }
+
+  .proj-hierarchy-pill {
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+
+  .proj-hierarchy-agent-cell {
+    padding-left: 14px;
+  }
+}
+
+@media (max-width: 479px) {
+  .acum-table th:nth-child(2),
+  .acum-table td:nth-child(2) {
+    width: 108px !important;
+    min-width: 108px !important;
+    max-width: 108px !important;
+  }
+
+  .tw.projection-hierarchy-wrap .projection-hierarchy-table {
+    min-width: 680px !important;
+  }
+
+  .projection-hierarchy-table th:first-child,
+  .projection-hierarchy-table td:first-child {
+    width: 198px !important;
+    min-width: 198px !important;
+    max-width: 198px !important;
+  }
+
+  .projection-family-summary-table th:first-child,
+  .projection-family-summary-table td:first-child {
+    width: 154px !important;
+    min-width: 154px !important;
+    max-width: 154px !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   v45 — MOBILE WIDTH REBALANCE + TAB SHADOW CLEANUP
+   - Acumulados: tablas que ya entran en mobile pasan a ocupar 100% del ancho.
+   - Cliente Top20: compresión adicional para ver todas las columnas.
+   - Proyección: primera columna más compacta, con wrap controlado para no perder datos.
+   - Tabs: se limpia la sombra/capa detrás de la solapa activa en mobile.
+   Desktop no se toca intencionalmente.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Tabs mobile: quitar la "capa" sombreada detrás de la tab activa */
+  .tabs-bar {
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    background: rgba(7, 9, 15, .98) !important;
+  }
+
+  .tabs-bar::before,
+  .tabs-bar::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  .tab,
+  .tab:hover,
+  .tab.on {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .tab.on::after {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: -1px !important;
+  }
+
+  /* Acumulados 5 columnas: llenar el ancho visible en vez de dejar aire muerto */
+  .acum-table:has(#at-coord),
+  .acum-table:has(#at-agte),
+  .acum-table:has(#at-grp),
+  .acum-table:has(#at-mrc) {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .acum-table:has(#at-coord) th,
+  .acum-table:has(#at-coord) td,
+  .acum-table:has(#at-agte) th,
+  .acum-table:has(#at-agte) td,
+  .acum-table:has(#at-grp) th,
+  .acum-table:has(#at-grp) td,
+  .acum-table:has(#at-mrc) th,
+  .acum-table:has(#at-mrc) td {
+    padding: 9px 6px !important;
+    font-size: 11.5px !important;
+  }
+
+  .acum-table:has(#at-coord) th:nth-child(1),
+  .acum-table:has(#at-coord) td:nth-child(1),
+  .acum-table:has(#at-agte) th:nth-child(1),
+  .acum-table:has(#at-agte) td:nth-child(1),
+  .acum-table:has(#at-grp) th:nth-child(1),
+  .acum-table:has(#at-grp) td:nth-child(1),
+  .acum-table:has(#at-mrc) th:nth-child(1),
+  .acum-table:has(#at-mrc) td:nth-child(1) {
+    width: 8% !important;
+    min-width: 28px !important;
+    max-width: 30px !important;
+    padding-left: 8px !important;
+    padding-right: 4px !important;
+  }
+
+  .acum-table:has(#at-coord) th:nth-child(2),
+  .acum-table:has(#at-coord) td:nth-child(2),
+  .acum-table:has(#at-agte) th:nth-child(2),
+  .acum-table:has(#at-agte) td:nth-child(2),
+  .acum-table:has(#at-grp) th:nth-child(2),
+  .acum-table:has(#at-grp) td:nth-child(2),
+  .acum-table:has(#at-mrc) th:nth-child(2),
+  .acum-table:has(#at-mrc) td:nth-child(2) {
+    width: 38% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .acum-table:has(#at-coord) th:nth-child(3),
+  .acum-table:has(#at-coord) td:nth-child(3),
+  .acum-table:has(#at-agte) th:nth-child(3),
+  .acum-table:has(#at-agte) td:nth-child(3),
+  .acum-table:has(#at-grp) th:nth-child(3),
+  .acum-table:has(#at-grp) td:nth-child(3),
+  .acum-table:has(#at-mrc) th:nth-child(3),
+  .acum-table:has(#at-mrc) td:nth-child(3) {
+    width: 24% !important;
+  }
+
+  .acum-table:has(#at-coord) th:nth-child(4),
+  .acum-table:has(#at-coord) td:nth-child(4),
+  .acum-table:has(#at-agte) th:nth-child(4),
+  .acum-table:has(#at-agte) td:nth-child(4),
+  .acum-table:has(#at-grp) th:nth-child(4),
+  .acum-table:has(#at-grp) td:nth-child(4),
+  .acum-table:has(#at-mrc) th:nth-child(4),
+  .acum-table:has(#at-mrc) td:nth-child(4) {
+    width: 12% !important;
+  }
+
+  .acum-table:has(#at-coord) th:nth-child(5),
+  .acum-table:has(#at-coord) td:nth-child(5),
+  .acum-table:has(#at-agte) th:nth-child(5),
+  .acum-table:has(#at-agte) td:nth-child(5),
+  .acum-table:has(#at-grp) th:nth-child(5),
+  .acum-table:has(#at-grp) td:nth-child(5),
+  .acum-table:has(#at-mrc) th:nth-child(5),
+  .acum-table:has(#at-mrc) td:nth-child(5) {
+    width: 18% !important;
+  }
+
+  /* Cliente Top20: comprimir para que entren todas las columnas en pantalla */
+  .acum-table:has(#at-clie) {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .acum-table:has(#at-clie) th,
+  .acum-table:has(#at-clie) td {
+    padding: 8px 4px !important;
+    font-size: 10.2px !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .acum-table:has(#at-clie) th:nth-child(1),
+  .acum-table:has(#at-clie) td:nth-child(1) { width: 7% !important; min-width: 24px !important; }
+  .acum-table:has(#at-clie) th:nth-child(2),
+  .acum-table:has(#at-clie) td:nth-child(2) { width: 24% !important; }
+  .acum-table:has(#at-clie) th:nth-child(3),
+  .acum-table:has(#at-clie) td:nth-child(3) { width: 11% !important; }
+  .acum-table:has(#at-clie) th:nth-child(4),
+  .acum-table:has(#at-clie) td:nth-child(4) { width: 18% !important; }
+  .acum-table:has(#at-clie) th:nth-child(5),
+  .acum-table:has(#at-clie) td:nth-child(5) { width: 22% !important; }
+  .acum-table:has(#at-clie) th:nth-child(6),
+  .acum-table:has(#at-clie) td:nth-child(6) { width: 8% !important; }
+  .acum-table:has(#at-clie) th:nth-child(7),
+  .acum-table:has(#at-clie) td:nth-child(7) { width: 10% !important; }
+
+  .acum-table:has(#at-clie) .mini-bar-track {
+    min-width: 100%;
+  }
+
+  /* Proyección: compactar más la primera columna sin truncar tanto la info */
+  .tw.projection-hierarchy-wrap #projectionHierarchyTable,
+  .tw.projection-hierarchy-wrap #projectionProductHierarchyTable {
+    min-width: 520px !important;
+    width: max(100%, 520px) !important;
+    table-layout: fixed !important;
+  }
+
+  .tw.projection-hierarchy-wrap #projectionFamilySummaryTable {
+    min-width: 460px !important;
+    width: max(100%, 460px) !important;
+    table-layout: fixed !important;
+  }
+
+  #projectionHierarchyTable th,
+  #projectionHierarchyTable td,
+  #projectionProductHierarchyTable th,
+  #projectionProductHierarchyTable td,
+  #projectionFamilySummaryTable th,
+  #projectionFamilySummaryTable td {
+    padding: 8px 7px !important;
+    font-size: 11px !important;
+  }
+
+  #projectionHierarchyTable th:first-child,
+  #projectionHierarchyTable td:first-child,
+  #projectionProductHierarchyTable th:first-child,
+  #projectionProductHierarchyTable td:first-child {
+    width: 142px !important;
+    min-width: 142px !important;
+    max-width: 142px !important;
+  }
+
+  #projectionFamilySummaryTable th:first-child,
+  #projectionFamilySummaryTable td:first-child {
+    width: 118px !important;
+    min-width: 118px !important;
+    max-width: 118px !important;
+  }
+
+  #projectionHierarchyTable th:not(:first-child),
+  #projectionHierarchyTable td:not(:first-child),
+  #projectionProductHierarchyTable th:not(:first-child),
+  #projectionProductHierarchyTable td:not(:first-child),
+  #projectionFamilySummaryTable th:not(:first-child),
+  #projectionFamilySummaryTable td:not(:first-child) {
+    min-width: 74px !important;
+  }
+
+  #projectionHierarchyTable .proj-hierarchy-toggle,
+  #projectionProductHierarchyTable .proj-hierarchy-toggle {
+    gap: 6px !important;
+  }
+
+  #projectionHierarchyTable .proj-hierarchy-caret,
+  #projectionProductHierarchyTable .proj-hierarchy-caret {
+    width: 12px !important;
+    flex-basis: 12px !important;
+    font-size: 10px !important;
+    padding-top: 1px !important;
+  }
+
+  #projectionHierarchyTable .proj-hierarchy-agent-cell,
+  #projectionProductHierarchyTable .proj-hierarchy-agent-cell {
+    padding-left: 12px !important;
+    gap: 1px !important;
+  }
+
+  #projectionHierarchyTable .proj-hierarchy-group-meta,
+  #projectionProductHierarchyTable .proj-hierarchy-group-meta {
+    gap: 4px !important;
+  }
+
+  #projectionHierarchyTable .proj-hierarchy-pill,
+  #projectionProductHierarchyTable .proj-hierarchy-pill {
+    padding: 2px 5px !important;
+    font-size: 8.5px !important;
+  }
+
+  #projectionHierarchyTable .proj-hierarchy-name,
+  #projectionProductHierarchyTable .proj-hierarchy-name,
+  #projectionHierarchyTable .proj-hierarchy-agent-sub,
+  #projectionProductHierarchyTable .proj-hierarchy-agent-sub,
+  #projectionFamilySummaryTable td:first-child {
+    white-space: normal !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    line-height: 1.22 !important;
+  }
+
+  #projectionHierarchyTable .proj-hierarchy-agent-code,
+  #projectionProductHierarchyTable .proj-hierarchy-agent-code {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .acum-table:has(#at-coord) th,
+  .acum-table:has(#at-coord) td,
+  .acum-table:has(#at-agte) th,
+  .acum-table:has(#at-agte) td,
+  .acum-table:has(#at-grp) th,
+  .acum-table:has(#at-grp) td,
+  .acum-table:has(#at-mrc) th,
+  .acum-table:has(#at-mrc) td {
+    font-size: 10.8px !important;
+  }
+
+  #projectionHierarchyTable th:first-child,
+  #projectionHierarchyTable td:first-child,
+  #projectionProductHierarchyTable th:first-child,
+  #projectionProductHierarchyTable td:first-child {
+    width: 132px !important;
+    min-width: 132px !important;
+    max-width: 132px !important;
+  }
+
+  #projectionFamilySummaryTable th:first-child,
+  #projectionFamilySummaryTable td:first-child {
+    width: 108px !important;
+    min-width: 108px !important;
+    max-width: 108px !important;
+  }
+
+  .tw.projection-hierarchy-wrap #projectionHierarchyTable,
+  .tw.projection-hierarchy-wrap #projectionProductHierarchyTable {
+    min-width: 500px !important;
+    width: max(100%, 500px) !important;
+  }
+
+  .tw.projection-hierarchy-wrap #projectionFamilySummaryTable {
+    min-width: 440px !important;
+    width: max(100%, 440px) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   v46 — MOBILE TABLE NORMALIZATION + PROJECTION FADE REMOVAL
+   - Acumulados: unifica ancho visible entre Por Coordinador / Agente / Grupo / Marca.
+   - Cliente Top 20: entra completo en mobile priorizando Kilos / % / Dist.
+   - Proyección Familia/Producto + Resumen Ejecutivo: se elimina solo el fade lateral.
+   Desktop no se modifica intencionalmente.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Acumulados 5 columnas: misma disposición visual para todas las vistas */
+  .acum-table--coord,
+  .acum-table--agent,
+  .acum-table--group,
+  .acum-table--brand {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .acum-table--coord th,
+  .acum-table--coord td,
+  .acum-table--agent th,
+  .acum-table--agent td,
+  .acum-table--group th,
+  .acum-table--group td,
+  .acum-table--brand th,
+  .acum-table--brand td {
+    padding: 8px 5px !important;
+    font-size: 10.9px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    letter-spacing: 0 !important;
+  }
+
+  .acum-table--coord th:nth-child(1),
+  .acum-table--coord td:nth-child(1),
+  .acum-table--agent th:nth-child(1),
+  .acum-table--agent td:nth-child(1),
+  .acum-table--group th:nth-child(1),
+  .acum-table--group td:nth-child(1),
+  .acum-table--brand th:nth-child(1),
+  .acum-table--brand td:nth-child(1) {
+    width: 7% !important;
+    min-width: 26px !important;
+    max-width: 28px !important;
+    padding-left: 8px !important;
+    padding-right: 4px !important;
+  }
+
+  .acum-table--coord th:nth-child(2),
+  .acum-table--coord td:nth-child(2),
+  .acum-table--agent th:nth-child(2),
+  .acum-table--agent td:nth-child(2),
+  .acum-table--group th:nth-child(2),
+  .acum-table--group td:nth-child(2),
+  .acum-table--brand th:nth-child(2),
+  .acum-table--brand td:nth-child(2) {
+    width: 32% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .acum-table--coord th:nth-child(3),
+  .acum-table--coord td:nth-child(3),
+  .acum-table--agent th:nth-child(3),
+  .acum-table--agent td:nth-child(3),
+  .acum-table--group th:nth-child(3),
+  .acum-table--group td:nth-child(3),
+  .acum-table--brand th:nth-child(3),
+  .acum-table--brand td:nth-child(3) {
+    width: 23% !important;
+  }
+
+  .acum-table--coord th:nth-child(4),
+  .acum-table--coord td:nth-child(4),
+  .acum-table--agent th:nth-child(4),
+  .acum-table--agent td:nth-child(4),
+  .acum-table--group th:nth-child(4),
+  .acum-table--group td:nth-child(4),
+  .acum-table--brand th:nth-child(4),
+  .acum-table--brand td:nth-child(4) {
+    width: 12% !important;
+  }
+
+  .acum-table--coord th:nth-child(5),
+  .acum-table--coord td:nth-child(5),
+  .acum-table--agent th:nth-child(5),
+  .acum-table--agent td:nth-child(5),
+  .acum-table--group th:nth-child(5),
+  .acum-table--group td:nth-child(5),
+  .acum-table--brand th:nth-child(5),
+  .acum-table--brand td:nth-child(5) {
+    width: 26% !important;
+  }
+
+  .acum-table--coord .mini-bar-track,
+  .acum-table--agent .mini-bar-track,
+  .acum-table--group .mini-bar-track,
+  .acum-table--brand .mini-bar-track {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Cliente Top 20: misma lógica de distribución, priorizando métricas */
+  .acum-table--client-top20 {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .acum-table--client-top20 th,
+  .acum-table--client-top20 td {
+    padding: 8px 4px !important;
+    font-size: 9.8px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    letter-spacing: 0 !important;
+  }
+
+  .acum-table--client-top20 th:nth-child(1),
+  .acum-table--client-top20 td:nth-child(1) { width: 6% !important; min-width: 24px !important; }
+  .acum-table--client-top20 th:nth-child(2),
+  .acum-table--client-top20 td:nth-child(2) { width: 19% !important; }
+  .acum-table--client-top20 th:nth-child(3),
+  .acum-table--client-top20 td:nth-child(3) { width: 10% !important; }
+  .acum-table--client-top20 th:nth-child(4),
+  .acum-table--client-top20 td:nth-child(4) { width: 15% !important; }
+  .acum-table--client-top20 th:nth-child(5),
+  .acum-table--client-top20 td:nth-child(5) { width: 21% !important; }
+  .acum-table--client-top20 th:nth-child(6),
+  .acum-table--client-top20 td:nth-child(6) { width: 8% !important; }
+  .acum-table--client-top20 th:nth-child(7),
+  .acum-table--client-top20 td:nth-child(7) { width: 21% !important; }
+
+  .acum-table--client-top20 .mini-bar-track {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Proyección: quitar solo el fade lateral derecho que genera la "sombra" */
+  .projection-hierarchy-wrap--no-fade::after,
+  .projection-hierarchy-wrap--no-fade.has-h-overflow::after {
+    display: none !important;
+    opacity: 0 !important;
+    content: none !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .acum-table--coord th,
+  .acum-table--coord td,
+  .acum-table--agent th,
+  .acum-table--agent td,
+  .acum-table--group th,
+  .acum-table--group td,
+  .acum-table--brand th,
+  .acum-table--brand td {
+    font-size: 10.5px !important;
+  }
+
+  .acum-table--client-top20 th,
+  .acum-table--client-top20 td {
+    font-size: 9.4px !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   v47 — MOBILE ACCUMULADOS RUNTIME TARGETING FIX
+   Causa probable del fallo previo:
+   - el ajuste v46 dependía de clases agregadas en index.html;
+   - si el HTML quedó viejo en caché o no se reemplazó, esos selectores no matchean.
+   Solución:
+   - el runtime marca cada tabla por tbody id desde table-ui.js;
+   - este bloque usa data-mobile-layout, sin depender del HTML base.
+   Desktop no se modifica intencionalmente.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .tw[data-mobile-layout="coord"],
+  .tw[data-mobile-layout="agent"],
+  .tw[data-mobile-layout="group"],
+  .tw[data-mobile-layout="brand"],
+  .tw[data-mobile-layout="client-top20"] {
+    overflow-x: hidden !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"],
+  .acum-table[data-mobile-layout="agent"],
+  .acum-table[data-mobile-layout="group"],
+  .acum-table[data-mobile-layout="brand"] {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    display: table !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] th,
+  .acum-table[data-mobile-layout="coord"] td,
+  .acum-table[data-mobile-layout="agent"] th,
+  .acum-table[data-mobile-layout="agent"] td,
+  .acum-table[data-mobile-layout="group"] th,
+  .acum-table[data-mobile-layout="group"] td,
+  .acum-table[data-mobile-layout="brand"] th,
+  .acum-table[data-mobile-layout="brand"] td {
+    padding: 8px 5px !important;
+    font-size: 10.6px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] th:nth-child(1),
+  .acum-table[data-mobile-layout="coord"] td:nth-child(1),
+  .acum-table[data-mobile-layout="agent"] th:nth-child(1),
+  .acum-table[data-mobile-layout="agent"] td:nth-child(1),
+  .acum-table[data-mobile-layout="group"] th:nth-child(1),
+  .acum-table[data-mobile-layout="group"] td:nth-child(1),
+  .acum-table[data-mobile-layout="brand"] th:nth-child(1),
+  .acum-table[data-mobile-layout="brand"] td:nth-child(1) {
+    width: 6% !important;
+    min-width: 22px !important;
+    max-width: 24px !important;
+    padding-left: 8px !important;
+    padding-right: 4px !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] th:nth-child(2),
+  .acum-table[data-mobile-layout="coord"] td:nth-child(2),
+  .acum-table[data-mobile-layout="agent"] th:nth-child(2),
+  .acum-table[data-mobile-layout="agent"] td:nth-child(2),
+  .acum-table[data-mobile-layout="group"] th:nth-child(2),
+  .acum-table[data-mobile-layout="group"] td:nth-child(2),
+  .acum-table[data-mobile-layout="brand"] th:nth-child(2),
+  .acum-table[data-mobile-layout="brand"] td:nth-child(2) {
+    width: 35% !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] th:nth-child(3),
+  .acum-table[data-mobile-layout="coord"] td:nth-child(3),
+  .acum-table[data-mobile-layout="agent"] th:nth-child(3),
+  .acum-table[data-mobile-layout="agent"] td:nth-child(3),
+  .acum-table[data-mobile-layout="group"] th:nth-child(3),
+  .acum-table[data-mobile-layout="group"] td:nth-child(3),
+  .acum-table[data-mobile-layout="brand"] th:nth-child(3),
+  .acum-table[data-mobile-layout="brand"] td:nth-child(3) {
+    width: 24% !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] th:nth-child(4),
+  .acum-table[data-mobile-layout="coord"] td:nth-child(4),
+  .acum-table[data-mobile-layout="agent"] th:nth-child(4),
+  .acum-table[data-mobile-layout="agent"] td:nth-child(4),
+  .acum-table[data-mobile-layout="group"] th:nth-child(4),
+  .acum-table[data-mobile-layout="group"] td:nth-child(4),
+  .acum-table[data-mobile-layout="brand"] th:nth-child(4),
+  .acum-table[data-mobile-layout="brand"] td:nth-child(4) {
+    width: 10% !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] th:nth-child(5),
+  .acum-table[data-mobile-layout="coord"] td:nth-child(5),
+  .acum-table[data-mobile-layout="agent"] th:nth-child(5),
+  .acum-table[data-mobile-layout="agent"] td:nth-child(5),
+  .acum-table[data-mobile-layout="group"] th:nth-child(5),
+  .acum-table[data-mobile-layout="group"] td:nth-child(5),
+  .acum-table[data-mobile-layout="brand"] th:nth-child(5),
+  .acum-table[data-mobile-layout="brand"] td:nth-child(5) {
+    width: 25% !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] .mini-bar-track,
+  .acum-table[data-mobile-layout="agent"] .mini-bar-track,
+  .acum-table[data-mobile-layout="group"] .mini-bar-track,
+  .acum-table[data-mobile-layout="brand"] .mini-bar-track {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .acum-table[data-mobile-layout="client-top20"] {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    display: table !important;
+  }
+
+  .acum-table[data-mobile-layout="client-top20"] th,
+  .acum-table[data-mobile-layout="client-top20"] td {
+    padding: 7px 3px !important;
+    font-size: 9.2px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(1),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(1) { width: 5% !important; min-width: 18px !important; max-width: 20px !important; }
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(2),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(2) { width: 23% !important; }
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(3),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(3) { width: 11% !important; }
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(4),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(4) { width: 20% !important; }
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(5),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(5) { width: 19% !important; }
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(6),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(6) { width: 7% !important; }
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(7),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(7) { width: 15% !important; }
+
+  .acum-table[data-mobile-layout="client-top20"] .mini-bar-track {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 389px) {
+  .acum-table[data-mobile-layout="coord"] th,
+  .acum-table[data-mobile-layout="coord"] td,
+  .acum-table[data-mobile-layout="agent"] th,
+  .acum-table[data-mobile-layout="agent"] td,
+  .acum-table[data-mobile-layout="group"] th,
+  .acum-table[data-mobile-layout="group"] td,
+  .acum-table[data-mobile-layout="brand"] th,
+  .acum-table[data-mobile-layout="brand"] td {
+    font-size: 10.1px !important;
+  }
+
+  .acum-table[data-mobile-layout="client-top20"] th,
+  .acum-table[data-mobile-layout="client-top20"] td {
+    font-size: 8.9px !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   v48 · Acumulados mobile: corrección robusta por runtime para Por Agente
+   y Por Cliente (Top 20).
+   Motivo del fallo previo:
+   - el ajuste solo por CSS no terminó de dominar el layout intrínseco cuando
+     el contenido textual era más largo;
+   - Por Agente y Cliente Top 20 seguían expandiendo la tabla.
+   Solución:
+   - runtime agrega colgroup + table-layout fixed;
+   - clipping explícito en columnas textuales;
+   - anchos homogéneos solo en mobile.
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .tw[data-mobile-layout="coord"],
+  .tw[data-mobile-layout="agent"],
+  .tw[data-mobile-layout="group"],
+  .tw[data-mobile-layout="brand"],
+  .tw[data-mobile-layout="client-top20"] {
+    overflow-x: hidden !important;
+  }
+
+  .acum-table[data-mobile-layout] {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+
+  .acum-table[data-mobile-layout] thead {
+    display: table-header-group !important;
+  }
+
+  .acum-table[data-mobile-layout] tbody {
+    display: table-row-group !important;
+  }
+
+  .acum-table[data-mobile-layout] tr {
+    display: table-row !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+
+  .acum-table[data-mobile-layout] th,
+  .acum-table[data-mobile-layout] td {
+    display: table-cell !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    vertical-align: middle !important;
+  }
+
+  .acum-table[data-mobile-layout] td::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  .acum-table[data-mobile-layout="coord"] th,
+  .acum-table[data-mobile-layout="coord"] td,
+  .acum-table[data-mobile-layout="agent"] th,
+  .acum-table[data-mobile-layout="agent"] td,
+  .acum-table[data-mobile-layout="group"] th,
+  .acum-table[data-mobile-layout="group"] td,
+  .acum-table[data-mobile-layout="brand"] th,
+  .acum-table[data-mobile-layout="brand"] td {
+    font-size: 10.3px !important;
+    line-height: 1.12 !important;
+    padding: 7px 4px !important;
+  }
+
+  .acum-table[data-mobile-layout="client-top20"] th,
+  .acum-table[data-mobile-layout="client-top20"] td {
+    font-size: 8.65px !important;
+    line-height: 1.08 !important;
+    padding: 7px 3px !important;
+  }
+
+  .acum-table[data-mobile-layout="client-top20"] th:nth-child(1),
+  .acum-table[data-mobile-layout="client-top20"] td:nth-child(1) {
+    padding-left: 4px !important;
+    padding-right: 2px !important;
+  }
+
+  .acum-table[data-mobile-layout] .td-clip {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .acum-table[data-mobile-layout] .td-clip__muted,
+  .acum-table[data-mobile-layout] .td-clip--muted {
+    color: var(--mut) !important;
+  }
+
+  .acum-table[data-mobile-layout] .mini-bar-track {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}

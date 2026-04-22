@@ -1,0 +1,7 @@
+{
+  "name": "Nemotron 3 Super (free)",
+  "provider": "openrouter",
+  "apiBase": "https://openrouter.ai/api/v1",
+  "apiKey": "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",
+  "model": "nvidia/nemotron-3-super-120b-a12b:free"
+}

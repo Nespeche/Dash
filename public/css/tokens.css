@@ -1,0 +1,385 @@
+/* =============================================================================
+   TOKENS.CSS v40 — Design System Enterprise
+   Fuente única de verdad. Carga ANTES de styles.css.
+   
+   BACKWARD COMPATIBLE: todos los tokens v35 se mantienen como aliases.
+   NUEVOS: brand scale, neutral scale, shadow levels, animation tokens.
+   ============================================================================= */
+
+:root {
+  /* ── TIPOGRAFÍA: familias ─────────────────────────────────────────── */
+  --font-body:    'DM Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Syne', 'Inter', system-ui, sans-serif;
+  --font-ui:      'Inter', system-ui, -apple-system, sans-serif;
+  --font-data:    'DM Mono', 'Courier New', monospace;
+  --font-mono:    'DM Mono', 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── TIPOGRAFÍA: escala (7 niveles) ──────────────────────────────── */
+  --fs-xs:   10px;   /* labels uppercase, eyebrow */
+  --fs-sm:   11px;   /* meta, muted, pills */
+  --fs-base: 12px;   /* tablas, controles */
+  --fs-12:   12px;   /* alias explícito para compatibilidad */
+  --fs-md:   13px;   /* texto secundario */
+  --fs-lg:   14px;   /* cuerpo principal */
+  --fs-xl:   18px;   /* KPI medianos */
+  --fs-2xl:  24px;   /* KPI grandes */
+  --fs-3xl:  28px;   /* títulos de página */
+
+  /* ── PESOS ───────────────────────────────────────────────────────── */
+  --fw-normal:   400;
+  --fw-medium:   500;
+  --fw-500:      500;  /* alias explícito */
+  --fw-semibold: 600;
+  --fw-600:      600;  /* alias explícito */
+  --fw-bold:     700;
+  --fw-700:      700;  /* alias explícito */
+  --fw-black:    800;
+
+  /* ── ALTURA DE LÍNEA ─────────────────────────────────────────────── */
+  --lh-tight: 1.15;
+  --lh-snug:  1.3;
+  --lh-base:  1.5;
+  --lh-loose: 1.65;
+
+  /* ── ESPACIADO: múltiplos de 4px ─────────────────────────────────── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── RADIOS ──────────────────────────────────────────────────────── */
+  --rad-xs:   4px;
+  --rad-sm:   6px;
+  --rad-md:   10px;
+  --rad-lg:   14px;
+  --rad-xl:   20px;
+  --rad-pill: 999px;
+
+  /* Aliases de compatibilidad */
+  --rad:            var(--rad-lg);
+  --rad2:           20px;
+  --radius-xs:      4px;
+  --radius-sm:      var(--rad-sm);
+  --radius-md:      var(--rad-md);
+  --radius-lg:      var(--rad-lg);
+  --radius-xl:      var(--rad-xl);
+  --radius-pill:    var(--rad-pill);
+  --radius-control: var(--rad-md);
+  --radius-card:    var(--rad-lg);
+  --radius-chip:    var(--rad-pill);
+
+  /* ── TRANSICIONES ────────────────────────────────────────────────── */
+  --dur-fast:    120ms;
+  --dur-base:    180ms;
+  --dur-slow:    300ms;
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Aliases de compatibilidad */
+  --duration-fast:    var(--dur-fast);
+  --duration-base:    var(--dur-base);
+  --duration-slow:    var(--dur-slow);
+  --ease-in-out:      var(--ease-inout);
+  --transition-base:  180ms ease;
+  --tr:               180ms ease;
+
+  /* ── ANIMACIONES: tokens centralizados ───────────────────────────── */
+  --anim-data-enter:    row-in 0.2s var(--ease-out) both;
+  --anim-skeleton:      shimmer 1.5s ease infinite;
+  --anim-fade-in:       fade-in 0.18s var(--ease-out);
+  --anim-slide-up:      slide-up 0.22s var(--ease-out);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DARK THEME (default)
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  /* ── BRAND GOLD: escala de 5 stops ────────────────────────────────
+     Reemplaza los 7 alias sueltos anteriores con una escala coherente.
+     Los nombres viejos (--acc, --acc-soft, etc.) se mantienen como aliases.
+  ─────────────────────────────────────────────────────────────────── */
+  --color-brand-50:   rgba(214, 167, 86, 0.10);  /* fill muy suave */
+  --color-brand-100:  rgba(214, 167, 86, 0.18);  /* fill hover */
+  --color-brand-400:  rgba(214, 167, 86, 0.34);  /* border */
+  --color-brand-600:  #d6a756;                   /* color principal */
+  --color-brand-700:  #c99845;                   /* variante */
+  --color-brand-800:  #f1d69b;                   /* light (sobre oscuro) */
+  --color-brand-950:  #0b1220;                   /* text on brand bg */
+
+  /* Aliases backward-compat */
+  --acc:        var(--color-brand-600);
+  --acc-2:      var(--color-brand-700);
+  --acc-light:  var(--color-brand-800);
+  --acc-l:      var(--color-brand-800);
+  --acc-soft:   var(--color-brand-50);
+  --acc-strong: var(--color-brand-100);
+  --acc-border: var(--color-brand-400);
+
+  /* ── NEUTRAL SLATE: escala de 9 stops ─────────────────────────────
+     Formaliza bg, surf, card, brd, mut en una escala calculada.
+  ─────────────────────────────────────────────────────────────────── */
+  --color-neutral-950: #0b1220;
+  --color-neutral-900: #111827;
+  --color-neutral-800: #172033;
+  --color-neutral-750: #1d2940;
+  --color-neutral-700: #253247;
+  --color-neutral-600: #33435d;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-300: #9fb0c4;
+  --color-neutral-200: #c8d3df;
+  --color-neutral-100: #eaf0f7;
+
+  /* Aliases backward-compat */
+  --bg:         var(--color-neutral-950);
+  --surf:       var(--color-neutral-900);
+  --card:       var(--color-neutral-800);
+  --card2:      var(--color-neutral-750);
+  --card-solid: var(--color-neutral-800);
+  --panel:      rgba(17, 24, 39, 0.92);
+  --panel-2:    rgba(23, 32, 51, 0.96);
+  --control:    #0f172a;
+  --control-2:  #162033;
+  --brd:        var(--color-neutral-700);
+  --brd-2:      var(--color-neutral-600);
+  --brd2:       var(--color-neutral-700);   /* alias legacy */
+  --brd-soft:   #232f47;                    /* alias legacy */
+  --txt:        var(--color-neutral-100);
+  --txt2:       var(--color-neutral-200);
+  --mut:        var(--color-neutral-400);
+  --mut-2:      #7f91a8;
+  --txt-soft:   var(--color-neutral-300);
+
+  /* ── SEMÁNTICOS ──────────────────────────────────────────────────── */
+  --blu: #6ea8fe;
+  --grn: #4cc9a6;
+  --pur: #9c8cff;
+  --red: #e07a7a;
+  --tea: #61c4d8;
+
+  --intent-success:        #4cc9a6;
+  --intent-success-soft:   rgba(76, 201, 166, 0.12);
+  --intent-success-border: rgba(76, 201, 166, 0.32);
+  --intent-warning:        #d6a756;
+  --intent-warning-soft:   rgba(214, 167, 86, 0.12);
+  --intent-warning-border: rgba(214, 167, 86, 0.32);
+  --intent-danger:         #e07a7a;
+  --intent-danger-soft:    rgba(224, 122, 122, 0.12);
+  --intent-danger-border:  rgba(224, 122, 122, 0.32);
+  --intent-info:           #6ea8fe;
+  --intent-info-soft:      rgba(110, 168, 254, 0.12);
+  --intent-info-border:    rgba(110, 168, 254, 0.32);
+  --intent-neutral:        #94a3b8;
+  --intent-neutral-soft:   rgba(148, 163, 184, 0.12);
+
+  /* ── SOMBRAS: 3 niveles de elevación ─────────────────────────────── */
+  --shadow-0:  none;
+  --shadow-1:  0 2px 8px rgba(2, 8, 23, 0.20), 0 1px 3px rgba(2, 8, 23, 0.12);
+  --shadow-2:  0 8px 24px rgba(2, 8, 23, 0.28);
+  --shadow-3:  0 18px 46px rgba(2, 8, 23, 0.36);
+
+  /* Aliases backward-compat */
+  --shadow-sm:     var(--shadow-1);
+  --shadow-md:     var(--shadow-2);
+  --shadow-lg:     var(--shadow-3);
+  --shadow-soft:   0 10px 28px rgba(0,0,0,.18);
+  --shadow-strong: 0 22px 56px rgba(0,0,0,.34);
+  --shadow-card:   0 4px 24px rgba(0,0,0,.28), 0 1px 4px rgba(0,0,0,.18);
+  --shadow-float:  0 18px 50px rgba(0,0,0,.42);
+  --sh-card:       var(--shadow-1);
+  --sh-float:      var(--shadow-3);
+
+  /* ── TABLA ───────────────────────────────────────────────────────── */
+  --table-row-height:    40px;
+  --table-cell-padx:     var(--space-3);
+  --table-zebra-bg:      rgba(255, 255, 255, 0.018);
+  --table-hover-bg:      rgba(214, 167, 86, 0.08);
+  --table-pinned-bg:     #172033;
+  --table-pinned-shadow: 4px 0 12px -6px rgba(0, 0, 0, 0.45);
+  --table-meter-track:   rgba(255, 255, 255, 0.06);
+  --table-meter-fill:    linear-gradient(90deg, rgba(214,167,86,.28), rgba(214,167,86,.62));
+
+  /* ── GRÁFICOS ────────────────────────────────────────────────────── */
+  --chart-text-strong: #eef4fb;
+  --chart-text-soft:   #8ea1b8;
+  --chart-grid:        rgba(148, 163, 184, 0.18);
+  --chart-accent:      var(--acc);
+  --chart-dot-stroke:  #0b1220;
+
+  /* ── GRADIENTES ──────────────────────────────────────────────────── */
+  --grad-acc: linear-gradient(135deg, #d6a756 0%, #c99845 100%);
+  --grad-blu: linear-gradient(135deg, #6ea8fe 0%, #3b82f6 100%);
+  --grad-grn: linear-gradient(135deg, #4cc9a6 0%, #10b981 100%);
+  --grad-pur: linear-gradient(135deg, #9c8cff 0%, #7c3aed 100%);
+  --grd-card: linear-gradient(165deg, rgba(22,32,52,.98) 0%, rgba(10,16,28,.98) 100%);
+
+  /* ── LAYOUT ──────────────────────────────────────────────────────── */
+  --header-height:   58px;
+  --panel-gap:       14px;
+  --control-height:  40px;
+  --metric-gap:      12px;
+  --metric-fill:     0%;   /* usado en bars, override via inline style */
+
+  /* ── CARD ────────────────────────────────────────────────────────── */
+  --card-hover: rgba(255, 255, 255, 0.04);
+
+  /* ── FOCUS ───────────────────────────────────────────────────────── */
+  --focus-ring:         0 0 0 3px rgba(214, 167, 86, 0.22);
+  --focus-ring-danger:  0 0 0 3px rgba(224, 122, 122, 0.22);
+  --focus-ring-success: 0 0 0 3px rgba(76, 201, 166, 0.22);
+
+  /* ── PROGRESS BAR ────────────────────────────────────────────────── */
+  --progress-bar-color: var(--acc);
+  --progress-bar-h:     2px;
+
+  /* ── MICROINTERACCIONES ──────────────────────────────────────────── */
+  --hover-lift:   translateY(-1px);
+  --active-press: translateY(0) scale(0.98);
+
+  /* ── KPI ─────────────────────────────────────────────────────────── */
+  --kpi-padding:       var(--space-4);
+  --kpi-radius:        var(--rad-lg);
+  --kpi-label-size:    var(--fs-xs);
+  --kpi-value-size:    var(--fs-2xl);
+  --kpi-delta-size:    var(--fs-sm);
+  --kpi-spark-height:  26px;
+  --kpi-spark-width:   120px;
+
+  /* ── EMPTY STATE ─────────────────────────────────────────────────── */
+  --empty-icon-size:  32px;
+  --empty-title-size: var(--fs-lg);
+  --empty-copy-size:  var(--fs-base);
+  --empty-padding:    var(--space-8) var(--space-6);
+
+  /* ── ACSUM tokens (v33+) ─────────────────────────────────────────── */
+  --acsum-pos:           var(--intent-success);
+  --acsum-pos-soft:      var(--intent-success-soft);
+  --acsum-pos-border:    var(--intent-success-border);
+  --acsum-neg:           var(--intent-danger);
+  --acsum-neg-soft:      var(--intent-danger-soft);
+  --acsum-neg-border:    var(--intent-danger-border);
+  --acsum-neu:           var(--intent-neutral);
+  --acsum-neu-soft:      var(--intent-neutral-soft);
+  --acsum-toolbar-bg:    var(--surf);
+  --acsum-toolbar-brd:   var(--brd);
+  --acsum-btn-on-bg:     var(--acc);
+  --acsum-btn-on-color:  #0b1220;
+  --acsum-th-size:       10.5px;
+  --acsum-td-size:       12.5px;
+  --acsum-bar-h:         3px;
+  --acsum-bar-radius:    2px;
+  --acsum-row-lost-bg:   rgba(224, 122, 122, 0.05);
+  --acsum-row-lost-brd:  rgba(224, 122, 122, 0.20);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════ */
+:root[data-theme="light"] {
+  /* Brand Gold en claro */
+  --color-brand-50:  rgba(184, 135, 52, 0.08);
+  --color-brand-100: rgba(184, 135, 52, 0.15);
+  --color-brand-400: rgba(184, 135, 52, 0.28);
+  --color-brand-600: #b88734;
+  --color-brand-700: #c99845;
+  --color-brand-800: #e2b96f;
+  --color-brand-950: #ffffff;
+
+  /* Neutral Slate en claro */
+  --color-neutral-950: #f4f7fb;
+  --color-neutral-900: #ffffff;
+  --color-neutral-800: #ffffff;
+  --color-neutral-750: #eef3f9;
+  --color-neutral-700: #d8e0eb;
+  --color-neutral-600: #c7d2e1;
+  --color-neutral-400: #64748b;
+  --color-neutral-300: #526277;
+  --color-neutral-200: #334155;
+  --color-neutral-100: #0f172a;
+
+  --brd-2:      #c7d2e1;
+  --brd2:       #d8e0eb;
+  --brd-soft:   #cdd5e0;
+  --mut-2:      #7b8a9b;
+  --control:    #f8fafc;
+  --control-2:  #eef2f7;
+  --panel:      rgba(255,255,255,.94);
+  --panel-2:    rgba(248,250,252,.98);
+
+  --blu: #3b82f6;
+  --grn: #0f9f86;
+  --pur: #7c6ee6;
+  --red: #c85b5b;
+  --tea: #0f8fa8;
+
+  --intent-success:        #0f9f86;
+  --intent-success-soft:   rgba(15,159,134,.10);
+  --intent-success-border: rgba(15,159,134,.22);
+  --intent-warning:        #b88734;
+  --intent-warning-soft:   rgba(184,135,52,.10);
+  --intent-warning-border: rgba(184,135,52,.22);
+  --intent-danger:         #c85b5b;
+  --intent-danger-soft:    rgba(200,91,91,.10);
+  --intent-danger-border:  rgba(200,91,91,.22);
+  --intent-info:           #3b82f6;
+  --intent-info-soft:      rgba(59,130,246,.10);
+  --intent-info-border:    rgba(59,130,246,.22);
+  --intent-neutral:        #64748b;
+  --intent-neutral-soft:   rgba(100,116,139,.10);
+
+  --shadow-0:  none;
+  --shadow-1:  0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.05);
+  --shadow-2:  0 4px 16px rgba(15,23,42,.09);
+  --shadow-3:  0 12px 36px rgba(15,23,42,.12);
+  --shadow-soft:   0 4px 12px rgba(15,23,42,.08);
+  --shadow-strong: 0 12px 32px rgba(15,23,42,.14);
+  --shadow-card:   0 2px 8px rgba(15,23,42,.08);
+  --shadow-float:  0 10px 32px rgba(15,23,42,.14);
+
+  --table-zebra-bg:      rgba(15,23,42,.018);
+  --table-hover-bg:      rgba(184,135,52,.08);
+  --table-pinned-bg:     #ffffff;
+  --table-pinned-shadow: 4px 0 12px -6px rgba(15,23,42,.12);
+  --table-meter-track:   rgba(15,23,42,.05);
+  --table-meter-fill:    linear-gradient(90deg,rgba(184,135,52,.26),rgba(184,135,52,.50));
+
+  --chart-text-strong: #0f172a;
+  --chart-text-soft:   #64748b;
+  --chart-grid:        rgba(100,116,139,.18);
+  --chart-dot-stroke:  #ffffff;
+  --card-hover:        rgba(15,23,42,.03);
+  --grad-acc:          linear-gradient(135deg, #b88734 0%, #9a7228 100%);
+  --grd-card:          linear-gradient(165deg, #f8fafc 0%, #f1f5fb 100%);
+  --focus-ring:        0 0 0 3px rgba(184,135,52,.22);
+
+  --acsum-btn-on-color: #ffffff;
+  --acsum-row-lost-bg:  rgba(200,91,91,.05);
+  --acsum-row-lost-brd: rgba(200,91,91,.18);
+}
+
+/* ── BREAKPOINTS: tokens canónicos v41 ──────────────────────────────────────
+   5 valores únicos. Nunca usar otro número en media queries.
+   En CSS: @media (max-width: var(--bp-xs)) NO funciona — usar los valores
+   literales pero referenciar este archivo como fuente de verdad.
+   En JS: leer con getComputedStyle(document.documentElement).getPropertyValue()
+───────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bp-xs:  479px;   /* ≤479  Mobile portrait */
+  --bp-sm:  480px;   /* 480–767  Mobile landscape + tablet pequeña */
+  --bp-md:  768px;   /* 768–1023 Tablet portrait (NUEVO breakpoint) */
+  --bp-lg:  1024px;  /* 1024–1279 Tablet landscape + notebook */
+  --bp-xl:  1280px;  /* ≥1280 Desktop wide (NUEVO aprovechamiento) */
+
+  /* Touch: target mínimo WCAG 2.1 AA */
+  --touch-target: 44px;
+
+  /* Ancho máximo del contenido en wide desktop */
+  --max-w-content: 1100px;        /* default */
+  --max-w-content-xl: 1320px;     /* ≥1280px */
+}

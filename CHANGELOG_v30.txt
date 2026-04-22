@@ -1,0 +1,23 @@
+═══════════════════════════════════════════════════════════════
+Ventas Dash · v30 — Mejoras IA + UX + Acumulado + BCRA
+Fecha: 2026-04-15
+Versión: 20260415-v30-ai-uxd-acumulado-bcra
+═══════════════════════════════════════════════════════════════
+
+ESTE ZIP CONTIENE:
+  · Backend (Worker) modificado y nuevos handlers
+  · Frontend modificado + 3 módulos nuevos
+  · Schema y configuración
+  · Documentación: MEJORAS_v30_README.md + APIS_GRATUITAS.md
+
+NO CONTIENE (los tenés en tu proyecto):
+  · BBDD_2025.csv
+  · VENTAS_DIARIAS.csv
+  · VENTAS_DIARIAS_INCREMENTAL.csv
+  · ventas_import.sql
+  · ventas_incremental*.sql
+
+Para aplicar:
+  1. Hacé backup de tu carpeta Dash actual
+  2. Descomprimí ESTE ZIP encima (sobrescribe modificados, agrega nuevos)
+  3. Ver MEJORAS_v30_README.md para los pasos completos de deploy

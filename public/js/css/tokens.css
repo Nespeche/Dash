@@ -1,0 +1,339 @@
+/* =============================================================================
+   TOKENS.CSS v31 — Design tokens formalizados
+   -----------------------------------------------------------------------------
+   Se cargan ANTES de styles.css. Extienden y documentan las variables que ya
+   existen en :root, organizándolas en tres capas:
+     1. Primitives  — colores crudos, escalas de tipografía, espaciado
+     2. Semantic    — --color-surface, --color-intent-*, --color-fg-*
+     3. Component   — tokens específicos para KPI, tabla, chip, chart
+   Los tokens existentes de v30 se MANTIENEN para compatibilidad total.
+   ============================================================================= */
+
+:root {
+  /* ── PRIMITIVES: escala de espaciado (múltiplos de 4px) ──────────────── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── PRIMITIVES: tipografía (escala tipográfica discreta) ────────────── */
+  --fs-10: 10px;
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-24: 24px;
+  --fs-28: 28px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+
+  --fw-400: 400;
+  --fw-500: 500;
+  --fw-600: 600;
+  --fw-700: 700;
+  --fw-800: 800;
+
+  --lh-tight: 1.15;
+  --lh-snug:  1.3;
+  --lh-base:  1.5;
+  --lh-loose: 1.65;
+
+  /* ── PRIMITIVES: radios ─────────────────────────────────────────────── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ── PRIMITIVES: transiciones ────────────────────────────────────────── */
+  --duration-fast:   120ms;
+  --duration-base:   180ms;
+  --duration-slow:   320ms;
+  --ease-out:        cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── SEMANTIC: intents (dark theme por default, overrides en light) ── */
+  --intent-success:         #34d399;
+  --intent-success-soft:    rgba(52, 211, 153, 0.12);
+  --intent-success-border:  rgba(52, 211, 153, 0.30);
+
+  --intent-warning:         #fbbf24;
+  --intent-warning-soft:    rgba(251, 191, 36, 0.12);
+  --intent-warning-border:  rgba(251, 191, 36, 0.30);
+
+  --intent-danger:          #f87171;
+  --intent-danger-soft:     rgba(248, 113, 113, 0.12);
+  --intent-danger-border:   rgba(248, 113, 113, 0.30);
+
+  --intent-info:            #60a5fa;
+  --intent-info-soft:       rgba(96, 165, 250, 0.12);
+  --intent-info-border:     rgba(96, 165, 250, 0.30);
+
+  --intent-neutral:         #7d869c;
+  --intent-neutral-soft:    rgba(125, 134, 156, 0.12);
+
+  /* ── COMPONENT: KPI card ─────────────────────────────────────────────── */
+  --kpi-padding:          var(--space-4);
+  --kpi-radius:           var(--radius-lg);
+  --kpi-label-size:       var(--fs-11);
+  --kpi-value-size:       var(--fs-28);
+  --kpi-delta-size:       var(--fs-12);
+  --kpi-spark-height:     26px;
+  --kpi-spark-width:      120px;
+
+  /* ── COMPONENT: tabla ────────────────────────────────────────────────── */
+  --table-row-height:     40px;
+  --table-cell-padx:      var(--space-3);
+  --table-zebra-bg:       rgba(255, 255, 255, 0.02);
+  --table-hover-bg:       rgba(251, 191, 36, 0.06);
+  --table-pinned-bg:      var(--card);
+  --table-pinned-shadow:  4px 0 12px -6px rgba(0, 0, 0, 0.45);
+  --table-meter-track:    rgba(255, 255, 255, 0.06);
+  --table-meter-fill:     linear-gradient(90deg, rgba(251, 191, 36, 0.28), rgba(251, 191, 36, 0.55));
+
+  /* ── COMPONENT: empty state ──────────────────────────────────────────── */
+  --empty-icon-size:      var(--fs-32);
+  --empty-title-size:     var(--fs-14);
+  --empty-copy-size:      var(--fs-12);
+  --empty-padding:        var(--space-8) var(--space-6);
+
+  /* ── COMPONENT: microinteractions ────────────────────────────────────── */
+  --hover-lift:           translateY(-1px);
+  --active-press:         translateY(0) scale(0.98);
+  --focus-ring:           0 0 0 3px rgba(251, 191, 36, 0.22);
+  --focus-ring-danger:    0 0 0 3px rgba(248, 113, 113, 0.22);
+  --focus-ring-success:   0 0 0 3px rgba(52, 211, 153, 0.22);
+}
+
+/* ═══════════════ LIGHT THEME OVERRIDES ═══════════════ */
+:root[data-theme="light"] {
+  --intent-success:         #059669;
+  --intent-success-soft:    rgba(5, 150, 105, 0.10);
+  --intent-success-border:  rgba(5, 150, 105, 0.25);
+
+  --intent-warning:         #d97706;
+  --intent-warning-soft:    rgba(217, 119, 6, 0.10);
+  --intent-warning-border:  rgba(217, 119, 6, 0.25);
+
+  --intent-danger:          #dc2626;
+  --intent-danger-soft:     rgba(220, 38, 38, 0.10);
+  --intent-danger-border:   rgba(220, 38, 38, 0.25);
+
+  --intent-info:            #2563eb;
+  --intent-info-soft:       rgba(37, 99, 235, 0.08);
+  --intent-info-border:     rgba(37, 99, 235, 0.25);
+
+  --intent-neutral:         #6b7280;
+  --intent-neutral-soft:    rgba(107, 114, 128, 0.08);
+
+  --table-zebra-bg:         rgba(15, 23, 42, 0.02);
+  --table-hover-bg:         rgba(217, 119, 6, 0.06);
+  --table-meter-track:      rgba(15, 23, 42, 0.05);
+  --table-meter-fill:       linear-gradient(90deg, rgba(217, 119, 6, 0.35), rgba(217, 119, 6, 0.65));
+  --table-pinned-shadow:    4px 0 12px -6px rgba(15, 23, 42, 0.15);
+
+  --focus-ring:             0 0 0 3px rgba(217, 119, 6, 0.22);
+}
+
+
+/* =============================================================================
+   TOKENS.CSS v32 — Mini design system visual
+   -----------------------------------------------------------------------------
+   Capa de diseño enfocada en UI profesional y homogénea. No rompe compatibilidad:
+   redefine variables semánticas y suma familias tipográficas / superficies para la
+   capa final ui-refresh-v32.css.
+   ============================================================================= */
+
+:root {
+  --font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Manrope', 'Inter', system-ui, sans-serif;
+  --font-mono-ui: 'Inter', system-ui, sans-serif;
+
+  --bg: #0b1220;
+  --surf: #111827;
+  --card: #172033;
+  --card2: #1d2940;
+  --card-solid: #172033;
+  --panel: rgba(17, 24, 39, 0.92);
+  --panel-2: rgba(23, 32, 51, 0.96);
+  --control: #0f172a;
+  --control-2: #162033;
+  --brd: #253247;
+  --brd-2: #33435d;
+
+  --txt: #eaf0f7;
+  --txt2: #c8d3df;
+  --mut: #94a3b8;
+  --mut-2: #7f91a8;
+  --txt-soft: #9fb0c4;
+
+  --acc: #d6a756;
+  --acc-2: #e6c37a;
+  --acc-light: #f1d69b;
+  --acc-soft: rgba(214, 167, 86, 0.12);
+  --acc-strong: rgba(214, 167, 86, 0.22);
+  --acc-border: rgba(214, 167, 86, 0.34);
+
+  --blu: #6ea8fe;
+  --grn: #4cc9a6;
+  --pur: #9c8cff;
+  --red: #e07a7a;
+  --tea: #61c4d8;
+
+  --intent-success: #4cc9a6;
+  --intent-success-soft: rgba(76, 201, 166, 0.12);
+  --intent-success-border: rgba(76, 201, 166, 0.32);
+  --intent-warning: #d6a756;
+  --intent-warning-soft: rgba(214, 167, 86, 0.12);
+  --intent-warning-border: rgba(214, 167, 86, 0.32);
+  --intent-danger: #e07a7a;
+  --intent-danger-soft: rgba(224, 122, 122, 0.12);
+  --intent-danger-border: rgba(224, 122, 122, 0.32);
+  --intent-info: #6ea8fe;
+  --intent-info-soft: rgba(110, 168, 254, 0.12);
+  --intent-info-border: rgba(110, 168, 254, 0.32);
+  --intent-neutral: #94a3b8;
+  --intent-neutral-soft: rgba(148, 163, 184, 0.12);
+
+  --shadow-sm: 0 8px 24px rgba(2, 8, 23, 0.16);
+  --shadow-md: 0 18px 46px rgba(2, 8, 23, 0.22);
+  --shadow-lg: 0 28px 64px rgba(2, 8, 23, 0.34);
+  --sh-card: var(--shadow-sm);
+  --sh-float: var(--shadow-lg);
+
+  --rad: 18px;
+  --rad2: 24px;
+  --radius-control: 14px;
+  --radius-card: 22px;
+  --radius-chip: 999px;
+
+  --focus-ring: 0 0 0 3px rgba(214, 167, 86, 0.18);
+  --table-zebra-bg: rgba(255, 255, 255, 0.018);
+  --table-hover-bg: rgba(214, 167, 86, 0.06);
+  --table-pinned-bg: #172033;
+  --table-meter-track: rgba(255, 255, 255, 0.06);
+  --table-meter-fill: linear-gradient(90deg, rgba(214, 167, 86, 0.28), rgba(214, 167, 86, 0.62));
+
+  --chart-text-strong: #eef4fb;
+  --chart-text-soft: #8ea1b8;
+  --chart-grid: rgba(148, 163, 184, 0.18);
+  --chart-accent: var(--acc);
+  --chart-dot-stroke: #0b1220;
+
+  --header-height: 58px;
+  --panel-gap: 14px;
+  --control-height: 40px;
+  --metric-gap: 12px;
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f7fb;
+  --surf: rgba(255, 255, 255, 0.9);
+  --card: #ffffff;
+  --card2: #eef3f9;
+  --card-solid: #ffffff;
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-2: rgba(248, 250, 252, 0.98);
+  --control: #f8fafc;
+  --control-2: #eef2f7;
+  --brd: #d8e0eb;
+  --brd-2: #c7d2e1;
+
+  --txt: #0f172a;
+  --txt2: #334155;
+  --mut: #64748b;
+  --mut-2: #7b8a9b;
+  --txt-soft: #526277;
+
+  --acc: #b88734;
+  --acc-2: #c99845;
+  --acc-light: #e2b96f;
+  --acc-soft: rgba(184, 135, 52, 0.10);
+  --acc-strong: rgba(184, 135, 52, 0.17);
+  --acc-border: rgba(184, 135, 52, 0.28);
+
+  --blu: #3b82f6;
+  --grn: #0f9f86;
+  --pur: #7c6ee6;
+  --red: #c85b5b;
+  --tea: #0f8fa8;
+
+  --intent-success: #0f9f86;
+  --intent-success-soft: rgba(15, 159, 134, 0.10);
+  --intent-success-border: rgba(15, 159, 134, 0.22);
+  --intent-warning: #b88734;
+  --intent-warning-soft: rgba(184, 135, 52, 0.10);
+  --intent-warning-border: rgba(184, 135, 52, 0.22);
+  --intent-danger: #c85b5b;
+  --intent-danger-soft: rgba(200, 91, 91, 0.10);
+  --intent-danger-border: rgba(200, 91, 91, 0.22);
+  --intent-info: #3b82f6;
+  --intent-info-soft: rgba(59, 130, 246, 0.10);
+  --intent-info-border: rgba(59, 130, 246, 0.22);
+  --intent-neutral: #64748b;
+  --intent-neutral-soft: rgba(100, 116, 139, 0.10);
+
+  --shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 20px 44px rgba(15, 23, 42, 0.10);
+  --shadow-lg: 0 32px 64px rgba(15, 23, 42, 0.14);
+
+  --table-zebra-bg: rgba(15, 23, 42, 0.018);
+  --table-hover-bg: rgba(184, 135, 52, 0.06);
+  --table-pinned-bg: #ffffff;
+  --table-meter-track: rgba(15, 23, 42, 0.05);
+  --table-meter-fill: linear-gradient(90deg, rgba(184, 135, 52, 0.26), rgba(184, 135, 52, 0.5));
+
+  --chart-text-strong: #0f172a;
+  --chart-text-soft: #64748b;
+  --chart-grid: rgba(100, 116, 139, 0.18);
+  --chart-dot-stroke: #ffffff;
+}
+
+/* =============================================================================
+   TOKENS.CSS — Entrega 5: tokens de Resumen Acumulado (v33)
+   -----------------------------------------------------------------------------
+   Tokens semánticos para la tabla comparativa. Usan las variables de intents
+   ya definidas arriba para garantizar coherencia en light/dark.
+   ============================================================================= */
+:root {
+  /* Colores semánticos para variación (comparativo vs año anterior) */
+  --acsum-pos:           var(--intent-success);
+  --acsum-pos-soft:      var(--intent-success-soft);
+  --acsum-pos-border:    var(--intent-success-border);
+  --acsum-neg:           var(--intent-danger);
+  --acsum-neg-soft:      var(--intent-danger-soft);
+  --acsum-neg-border:    var(--intent-danger-border);
+  --acsum-neu:           var(--intent-neutral);
+  --acsum-neu-soft:      var(--intent-neutral-soft);
+
+  /* Toolbar */
+  --acsum-toolbar-bg:    var(--surf);
+  --acsum-toolbar-brd:   var(--brd);
+  --acsum-btn-on-bg:     var(--acc);
+  --acsum-btn-on-color:  #0b1220;
+
+  /* Tabla */
+  --acsum-th-size:       10.5px;
+  --acsum-td-size:       12.5px;
+  --acsum-bar-h:         3px;
+  --acsum-bar-radius:    2px;
+  --acsum-row-lost-bg:   rgba(224, 122, 122, 0.04);
+  --acsum-row-lost-brd:  rgba(224, 122, 122, 0.18);
+}
+
+:root[data-theme="light"] {
+  --acsum-btn-on-color:  #ffffff;
+  --acsum-row-lost-bg:   rgba(200, 91, 91, 0.04);
+  --acsum-row-lost-brd:  rgba(200, 91, 91, 0.15);
+}

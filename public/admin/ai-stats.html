@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="theme-color" content="#0a0d16"/>
+  <title>Ventas Dash — Admin · IA Stats</title>
+  <meta name="ventas-api-base" content="https://ventas-d1-api-proyeccion-v2.pechenicolas.workers.dev/api"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css"/>
+  <style>
+    :root[data-theme="light"] { color-scheme: light; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg, #0a0d16);
+      color: var(--txt, #eef1fa);
+      min-height: 100vh;
+      padding: 24px 20px 48px;
+    }
+    .hdr {
+      max-width: 1100px;
+      margin: 0 auto 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .logo { font: 800 22px/1 'Syne', sans-serif; }
+    .logo b { color: var(--acc, #fbbf24); }
+    .sub { font: 500 13px/1.3 'DM Sans', sans-serif; color: var(--mut, #7d869c); margin-top: 4px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .kpi {
+      background: var(--card, #1b2032);
+      border: 1px solid var(--brd, #2a304a);
+      border-radius: var(--radius-lg, 14px);
+      padding: 18px 20px;
+    }
+    .kpi-label {
+      font: 600 11px/1.3 'DM Sans', sans-serif;
+      color: var(--mut, #7d869c);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .kpi-val {
+      font: 800 30px/1.1 'Syne', sans-serif;
+      color: var(--txt, #eef1fa);
+      margin-top: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .kpi-delta { font: 600 12px/1.3 'DM Sans', sans-serif; margin-top: 6px; }
+    .kpi-delta.good { color: var(--intent-success, #34d399); }
+    .kpi-delta.bad  { color: var(--intent-danger, #f87171); }
+    .card {
+      background: var(--card, #1b2032);
+      border: 1px solid var(--brd, #2a304a);
+      border-radius: var(--radius-lg, 14px);
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+    .ct {
+      font: 700 15px/1.2 'Syne', sans-serif;
+      color: var(--txt, #eef1fa);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ct-sub {
+      font: 500 11px/1 'DM Sans', sans-serif;
+      color: var(--mut, #7d869c);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      text-align: left;
+      padding: 10px 8px;
+      font: 600 11px/1 'DM Sans', sans-serif;
+      color: var(--mut, #7d869c);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid var(--brd, #2a304a);
+    }
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--brd, #2a304a);
+      vertical-align: top;
+    }
+    .rating-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font: 600 11px/1.3 'DM Sans', sans-serif;
+    }
+    .rating-pill.up   { background: var(--intent-success-soft, rgba(52,211,153,.12)); color: var(--intent-success, #34d399); }
+    .rating-pill.down { background: var(--intent-danger-soft, rgba(248,113,113,.12));  color: var(--intent-danger, #f87171); }
+    .q { font-weight: 600; color: var(--txt, #eef1fa); }
+    .a { color: var(--mut, #7d869c); font-size: 12px; margin-top: 4px; max-width: 480px; }
+    .tsmall { font: 500 10.5px/1 'DM Sans', sans-serif; color: var(--mut, #7d869c); }
+    .err { padding: 16px; background: var(--intent-danger-soft, rgba(248,113,113,.12)); border: 1px solid var(--intent-danger-border, rgba(248,113,113,.30)); border-radius: 10px; color: var(--intent-danger, #f87171); }
+    .btn { background: var(--acc-soft, rgba(251,191,36,.14)); border: 1px solid var(--intent-warning-border, rgba(251,191,36,.30)); color: var(--acc, #fbbf24); padding: 6px 12px; border-radius: 8px; font: 600 12px/1 'DM Sans', sans-serif; cursor: pointer; }
+    .btn:hover { transform: translateY(-1px); }
+    .loading {
+      height: 20px;
+      background: linear-gradient(90deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.04) 100%);
+      background-size: 200% 100%;
+      animation: shim 1.4s linear infinite;
+      border-radius: 4px;
+    }
+    @keyframes shim { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .muted { color: var(--mut, #7d869c); }
+    .bar-track {
+      background: var(--table-meter-track, rgba(255,255,255,.06));
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .bar-fill { height: 100%; background: var(--intent-success, #34d399); }
+    .bar-fill.bad { background: var(--intent-danger, #f87171); }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <div>
+    <div class="logo">VENTAS <b>DASH</b> · Admin</div>
+    <div class="sub">Panel de feedback del asistente IA</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn" id="btnRefresh">↻ Actualizar</button>
+    <a href="../index.html" class="btn" style="text-decoration:none;display:inline-flex;align-items:center">← Volver al tablero</a>
+  </div>
+</header>
+
+<div class="container">
+  <div id="authErr" class="err" hidden></div>
+
+  <div class="kpi-row" id="kpiRow">
+    <div class="kpi"><div class="kpi-label">Total de ratings</div><div class="kpi-val" id="kpiTotal">—</div></div>
+    <div class="kpi"><div class="kpi-label">👍 Útiles</div><div class="kpi-val" id="kpiUp">—</div><div class="kpi-delta good" id="kpiUpPct">—</div></div>
+    <div class="kpi"><div class="kpi-label">👎 No útiles</div><div class="kpi-val" id="kpiDown">—</div><div class="kpi-delta bad" id="kpiDownPct">—</div></div>
+    <div class="kpi"><div class="kpi-label">% de satisfacción</div><div class="kpi-val" id="kpiSat">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Top pestañas con feedback <span class="ct-sub" id="tabCount">—</span></div>
+    <div id="tabList" class="muted">Cargando...</div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Últimos 50 ratings <span class="ct-sub" id="recentCount">—</span></div>
+    <div id="recentWrap">
+      <div class="loading" style="height: 40px; margin-bottom: 8px"></div>
+      <div class="loading" style="height: 40px; margin-bottom: 8px"></div>
+      <div class="loading" style="height: 40px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const API_BASE = (document.querySelector('meta[name="ventas-api-base"]')?.content || "").replace(/\/$/, "");
+  const AUTH_KEY = "ventasDashBasicAuth";
+
+  function getAuth() {
+    try { return sessionStorage.getItem(AUTH_KEY) || localStorage.getItem(AUTH_KEY) || ""; }
+    catch (_) { return ""; }
+  }
+
+  function escHtml(s) {
+    return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function fmt(n) {
+    if (!Number.isFinite(n)) return "—";
+    return Number(n).toLocaleString("es-AR");
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString("es-AR", { day:"2-digit", month:"2-digit" }) + " " +
+             d.toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit" });
+    } catch(_) { return String(iso).slice(0, 16); }
+  }
+
+  async function fetchStats() {
+    const auth = getAuth();
+    if (!auth) {
+      document.getElementById("authErr").hidden = false;
+      document.getElementById("authErr").textContent = "Inicia sesión en el tablero principal primero. Luego volvé a este panel.";
+      return null;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/ai/feedback-stats?limit=50`, {
+        headers: { "accept": "application/json", "Authorization": `Basic ${auth}` }
+      });
+      if (res.status === 401) {
+        document.getElementById("authErr").hidden = false;
+        document.getElementById("authErr").textContent = "Autenticación inválida. Volvé al tablero, loggeate y regresá.";
+        return null;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      document.getElementById("authErr").hidden = false;
+      document.getElementById("authErr").textContent = `Error al cargar: ${err?.message || err}`;
+      return null;
+    }
+  }
+
+  function groupByTab(recent) {
+    const counts = {};
+    for (const r of recent || []) {
+      const tab = r?.active_tab || "—";
+      if (!counts[tab]) counts[tab] = { up: 0, down: 0 };
+      if (r.rating === "up") counts[tab].up++;
+      else if (r.rating === "down") counts[tab].down++;
+    }
+    const entries = Object.entries(counts).map(([tab, c]) => ({
+      tab, ...c, total: c.up + c.down,
+      satPct: c.up + c.down ? +((c.up / (c.up + c.down)) * 100).toFixed(0) : null
+    }));
+    entries.sort((a, b) => b.total - a.total);
+    return entries;
+  }
+
+  function render(data) {
+    if (!data || !data.ok) return;
+    document.getElementById("authErr").hidden = true;
+
+    const totals = data.totals || { up: 0, down: 0 };
+    const total = totals.up + totals.down;
+    const pctUp = total ? +((totals.up / total) * 100).toFixed(1) : 0;
+    const pctDown = total ? +((totals.down / total) * 100).toFixed(1) : 0;
+
+    document.getElementById("kpiTotal").textContent = fmt(total);
+    document.getElementById("kpiUp").textContent = fmt(totals.up);
+    document.getElementById("kpiDown").textContent = fmt(totals.down);
+    document.getElementById("kpiSat").textContent = total ? `${pctUp}%` : "—";
+    document.getElementById("kpiUpPct").textContent = total ? `${pctUp}% del total` : "—";
+    document.getElementById("kpiDownPct").textContent = total ? `${pctDown}% del total` : "—";
+
+    const recent = Array.isArray(data.recent) ? data.recent : [];
+    document.getElementById("recentCount").textContent = `${recent.length} registros`;
+
+    const tabs = groupByTab(recent);
+    document.getElementById("tabCount").textContent = `${tabs.length} pestañas`;
+    const tabListEl = document.getElementById("tabList");
+    if (!tabs.length) {
+      tabListEl.innerHTML = "<div class='muted'>Sin datos aún.</div>";
+    } else {
+      const maxT = Math.max(...tabs.map(t => t.total), 1);
+      tabListEl.innerHTML = tabs.map(t => `
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">
+            <span style="font-weight:600">${escHtml(t.tab)}</span>
+            <span class="muted">${t.total} (${t.satPct != null ? t.satPct + "% sat" : "s/d"})</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill ${t.satPct != null && t.satPct < 50 ? "bad" : ""}" style="width:${(t.total/maxT*100).toFixed(0)}%"></div></div>
+        </div>
+      `).join("");
+    }
+
+    const recentEl = document.getElementById("recentWrap");
+    if (!recent.length) {
+      recentEl.innerHTML = "<div class='muted'>Aún no hay ratings registrados. Cuando los usuarios califiquen respuestas del asistente, aparecerán acá.</div>";
+      return;
+    }
+    recentEl.innerHTML = `
+      <table>
+        <thead><tr>
+          <th style="width:80px">Rating</th>
+          <th>Pregunta & Respuesta</th>
+          <th style="width:100px">Tab</th>
+          <th style="width:120px">Cuándo</th>
+        </tr></thead>
+        <tbody>
+          ${recent.map(r => `
+            <tr>
+              <td><span class="rating-pill ${r.rating === "up" ? "up" : "down"}">${r.rating === "up" ? "👍 Útil" : "👎 No útil"}</span></td>
+              <td>
+                <div class="q">${escHtml(String(r.question || "").slice(0, 160))}</div>
+                <div class="a">${escHtml(String(r.answer || "").slice(0, 240))}${(r.answer || "").length > 240 ? "…" : ""}</div>
+              </td>
+              <td class="tsmall">${escHtml(r.active_tab || "—")}</td>
+              <td class="tsmall">${fmtDate(r.ts)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function load() {
+    const data = await fetchStats();
+    if (data) render(data);
+  }
+
+  document.getElementById("btnRefresh").addEventListener("click", load);
+  load();
+})();
+</script>
+
+</body>
+</html>

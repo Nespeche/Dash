@@ -1,0 +1,10 @@
+export const STATE_TTL = 300;
+export const DETAIL_TTL = 300;
+export const INSIGHTS_TTL = 600;
+export const PROJECTION_COMPARE_TTL = 300;
+export const PROJECTION_DETAIL_TTL = 300;
+export const CATALOG_TTL = 600;
+export const DETAIL_PAGE_DEFAULT = 50;
+export const DETAIL_PAGE_MAX = 1000;
+export const RUNTIME_CONTEXT_TTL_MS = 15000;
+export const SUMMARY_COLS = ["Fecha", "Cliente", "Grupo_Familia", "Cod_Producto", "Producto_Desc", "Kilos"];

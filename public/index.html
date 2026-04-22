@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta name="color-scheme" content="dark"/>
+  <title>Ventas Dashboard</title>
+  <meta name="ventas-api-base" content="https://ventas-d1-api-proyeccion-v2.pechenicolas.workers.dev/api"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500;700&family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="css/v31-enhancements.css"/>
+  <link rel="stylesheet" href="css/ui-refresh-v32.css"/>
+  <link rel="stylesheet" href="css/ui-v35.css"/>
+  <link rel="stylesheet" href="css/design-system.css"/>
+  <link rel="stylesheet" href="css/responsive.css"/>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+  <script>
+    // v30: anti-FOUC para light/dark mode. Aplica el tema antes del primer paint.
+    (function(){
+      try{
+        var stored=localStorage.getItem("ventasDashTheme");
+        var theme=stored==="light"||stored==="dark"?stored:(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
+        if(theme==="light")document.documentElement.setAttribute("data-theme","light");
+        var meta=document.querySelector('meta[name="theme-color"]');
+        if(meta)meta.setAttribute("content",theme==="light"?"#f7f8fc":"#0a0d16");
+      }catch(_){/* noop */}
+    })();
+  </script>
+</head>
+<body>
+
+<a href="#tabsBar" class="skip-link">Saltar al contenido</a>
+
+<div class="overlay" id="ov"><div class="spin"></div><div class="ovtxt">CARGANDO DATOS</div></div>
+
+<div id="loadProgressBar" aria-hidden="true"></div>
+<!-- HEADER -->
+<div class="sr-only" id="ariaStatus" aria-live="polite"></div>
+<header class="hdr">
+  <div class="logo">VENTAS <b>DASH</b></div>
+  <div style="display:flex;align-items:center;gap:0">
+    <div id="bcraPill" class="bcra-pill bcra-tooltip loading" title="Cotización USD"><span class="bcra-icn">💵</span><span class="bcra-lbl">USD</span> <span class="bcra-val">—</span></div>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema">🌓</button>
+    <div class="pill-status" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="stxt">Conectando...</span></div>
+  </div>
+</header>
+
+<!-- SHARED FILTER PANEL -->
+<div class="filter-panel" id="filterPanel">
+  <div class="fp-inner">
+    <!-- Period row -->
+    <div class="fp-top">
+      <div class="fp-top-left">
+        <button type="button" class="btn-xs btn-toggle" id="btnToggleFilters" aria-expanded="true">☰ Ocultar filtros</button>
+        <div class="fp-main-controls">
+          <button type="button" class="pbtn" data-p="7">7d</button>
+          <button type="button" class="pbtn" data-p="15">15d</button>
+          <button type="button" class="pbtn" data-p="30">30d</button>
+          <button type="button" class="pbtn" data-p="90">3m</button>
+          <button type="button" class="pbtn" data-p="mes">Este mes</button>
+          <button type="button" class="pbtn" data-p="todo">Todo</button>
+          <div class="date-pair">
+            <label for="fDesde">Desde</label><input type="date" id="fDesde"/>
+            <label for="fHasta">Hasta</label><input type="date" id="fHasta"/>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn-xs" id="btnClrAll">✕ Limpiar todo</button>
+    </div>
+    <div class="fp-collapsed-note" id="fpCollapsedNote"></div>
+    <!-- Cascade selects -->
+    <div class="fp-selects">
+      <div class="sel-wrap">
+        <div class="sel-lbl"><span class="snum" id="sn1">1</span>Coordinador</div>
+        <select id="sCoord"><option value="">Todos</option></select>
+      </div>
+      <div class="sel-wrap">
+        <div class="sel-lbl"><span class="snum" id="sn2">2</span>Agente</div>
+        <select id="sAgte"><option value="">Todos</option></select>
+      </div>
+      <div class="sel-wrap">
+        <div class="sel-lbl"><span class="snum" id="sn3">3</span>Cliente</div>
+        <div class="search-wrap" id="clientSearchWrap">
+          <div class="search-box">
+            <span class="search-ico" aria-hidden="true">🔎</span>
+            <input id="iClie" class="search-input" type="text" placeholder="Buscar cliente por nombre o código" autocomplete="off" aria-label="Buscar cliente" aria-describedby="clieMeta" aria-controls="clientDropdown"/>
+            <button type="button" id="btnClieClr" class="search-clear" aria-label="Limpiar cliente" hidden>✕</button>
+          </div>
+          <div class="search-meta" id="clieMeta"></div>
+          <div class="search-dd" id="clientDropdown" role="listbox" aria-label="Resultados de clientes"></div>
+          <select id="sClie" class="sr-only" aria-hidden="true"><option value="">Todos</option></select>
+        </div>
+      </div>
+      <div class="sel-wrap">
+        <div class="sel-lbl"><span class="snum" id="sn4">4</span>Grupo Familia</div>
+        <select id="sGrp"><option value="">Todos</option></select>
+      </div>
+      <div class="sel-wrap">
+        <div class="sel-lbl"><span class="snum" id="sn5">5</span>Marca</div>
+        <select id="sMrc"><option value="">Todas</option></select>
+      </div>
+      <div class="sel-wrap">
+        <div class="sel-lbl"><span class="snum" id="snReg" data-region>↯</span>Región</div>
+        <select id="sReg"><option value="">Todas las regiones</option></select>
+      </div>
+      <div class="sel-wrap">
+        <div class="sel-lbl"><span class="snum" id="sn6">6</span>Cód. Producto</div>
+        <div class="search-wrap" id="productSearchWrap">
+          <div class="search-box">
+            <span class="search-ico" aria-hidden="true">#</span>
+            <input id="iProd" class="search-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Agregar código de producto" autocomplete="off" aria-label="Buscar código de producto" aria-describedby="prodMeta" aria-controls="productDropdown"/>
+            <button type="button" id="btnProdClr" class="search-clear" aria-label="Limpiar productos" hidden>✕</button>
+          </div>
+          <div class="search-meta" id="prodMeta"></div>
+          <div class="search-chips" id="prodChips" aria-live="polite"></div>
+          <div class="search-dd" id="productDropdown" role="listbox" aria-label="Resultados de productos"></div>
+          <select id="sCodProd" class="sr-only" aria-hidden="true" multiple><option value="">Todos</option></select>
+        </div>
+      </div>
+    </div>
+    <!-- Active pills -->
+    <div class="pills" id="pills"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<nav class="tabs-bar" id="tabsBar" aria-label="Navegación principal">
+  <button class="tab on" id="tab-detalle"     data-tab="detalle"      data-short="Detalle">📋 Detalle</button>
+  <button class="tab"    id="tab-proyeccion"  data-tab="proyeccion"   data-short="Proy.">🧮 Proyección</button>
+  <button class="tab"    id="tab-acumulados"  data-tab="acumulados"   data-short="Acum.">📊 Acumulados</button>
+  <button class="tab"    id="tab-resumen-acum" data-tab="resumen-acum" data-short="Resumen">📚 Resumen Acumulado</button>
+  <button class="tab"    id="tab-frecuencia"  data-tab="frecuencia"   data-short="Frec.">🔄 Frecuencia</button>
+  <button class="tab"    id="tab-graficos"    data-tab="graficos"     data-short="Gráf.">📈 Gráficos</button>
+</nav>
+
+<section class="page-hero-shell">
+  <div class="page-hero">
+    <div class="page-hero-main">
+      <div class="page-hero-eyebrow" id="pageEyebrow">Vista operativa</div>
+      <h1 class="page-hero-title" id="pageTitle">Detalle comercial</h1>
+      <p class="page-hero-copy" id="pageCopy">Seguimiento diario con filtros en cascada, tabla de resumen y foco rápido en los grupos con mayor peso.</p>
+    </div>
+    <div class="page-hero-meta">
+      <span class="hero-chip" id="heroPeriod">Período: —</span>
+      <span class="hero-chip" id="heroFilters">0 filtros activos</span>
+      <span class="hero-chip hero-chip--soft" id="heroContext">Vista general</span>
+      <button type="button" class="hero-chip hero-chip--action" id="heroToggleFilters">Ocultar filtros</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PAGE: DETALLE ══════════ -->
+<div class="page on" id="page-detalle">
+<div class="wrap">
+  <div class="ebar" id="ebar"><span class="ebar-ico" style="font-size:17px;flex-shrink:0">⚠️</span><div class="ebar-copy"><div class="etit">Error al cargar datos</div><div class="emsg" id="emsg"></div></div><div class="ebar-actions"><button type="button" class="table-action-btn" id="btnRetryLoad">Reintentar</button></div></div>
+
+  <!-- Main KPIs -->
+  <div class="kpi-row">
+    <div class="kpi a"><div class="kpi-lbl">Total Kilos</div><div class="kpi-val" id="kK">—</div></div>
+    <div class="kpi b"><div class="kpi-lbl">Clientes</div><div class="kpi-val" id="kC">—</div></div>
+    <div class="kpi g"><div class="kpi-lbl">Agentes</div><div class="kpi-val" id="kA">—</div></div>
+    <div class="kpi p"><div class="kpi-lbl">Registros</div><div class="kpi-val" id="kR">—</div></div>
+  </div>
+
+  <!-- Grupo KPI strip -->
+  <div class="detail-strip-head">
+    <div>
+      <div class="grupo-strip-lbl">Kilos por Grupo de Familia</div>
+      <div class="grupo-strip-hint" id="detailGroupHint">Usá estas tarjetas como filtro rápido para centrar el resumen en uno o varios grupos sin bajar al selector principal.</div>
+    </div>
+    <div class="detail-strip-actions">
+      <span class="detail-strip-badge" id="detailGroupBadge">Sin filtro rápido</span>
+      <button type="button" class="btn-xs btn-ghost" id="btnDetailClearGroup">Limpiar grupos</button>
+    </div>
+  </div>
+  <div class="grupo-strip" id="grupoStrip"></div>
+
+  <!-- Detail table -->
+  <div class="card">
+    <div class="ch"><div class="ct" id="detailTitle">Resumen filtrado</div><span class="cbadge" id="tbadge">—</span></div>
+    <div class="detail-toolbar" id="detailTools"></div>
+    <div class="tw">
+      <table class="responsive-stack responsive-stack--detail">
+        <thead id="detailHead"><tr>
+          <th>Fecha</th><th>Cliente</th><th>Grupo</th><th>Cód. Producto</th><th>Producto</th><th class="r">Kilos</th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="6"><div class="empty"><div class="eico">📊</div><p>Cargando...</p></div></td></tr></tbody>
+      </table>
+    </div>
+    <div class="snote" id="snote"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ PAGE: PROYECCIÓN ══════════ -->
+<div class="page" id="page-proyeccion">
+<div class="wrap">
+
+  <div class="card proj-card">
+    <div class="ch"><div class="ct">Configuración de proyección</div><span class="cbadge" id="projBadge">Pendiente</span></div>
+    <div class="proj-controls">
+      <label class="proj-field">
+        <span>Días hábiles del mes</span>
+        <input id="pHabiles" type="number" min="1" step="1" placeholder="21" inputmode="numeric"/>
+      </label>
+      <label class="proj-field">
+        <span>Días hábiles transcurridos</span>
+        <input id="pTranscurridos" type="number" min="1" step="1" placeholder="13" inputmode="numeric"/>
+      </label>
+      <div class="proj-actions">
+        <button type="button" class="btn-xs" id="btnProjReset">Limpiar</button>
+      </div>
+    </div>
+    <div class="proj-note" id="projNote">Ingresá ambos valores para calcular la proyección de kilos.</div>
+  </div>
+
+  <div class="kpi-row proj-stats-row">
+    <div class="kpi b"><div class="kpi-lbl">Clientes</div><div class="kpi-val" id="pkC">—</div></div>
+    <div class="kpi g"><div class="kpi-lbl">Agentes</div><div class="kpi-val" id="pkA">—</div></div>
+    <div class="kpi p"><div class="kpi-lbl">Registros</div><div class="kpi-val" id="pkR">—</div></div>
+  </div>
+
+  <div class="card proj-hero-card">
+    <div class="proj-hero-head">
+      <div>
+        <div class="ct">Comparativo de proyección</div>
+        <div class="proj-hero-title" id="pcMonth">—</div>
+        <div class="proj-hero-sub" id="pcMonthSub">Referencia histórica</div>
+      </div>
+      <div class="proj-hero-pill" id="pcCompareBadge">Sin base 2025</div>
+    </div>
+    <div class="proj-hero-grid">
+      <div class="proj-hero-item accent">
+        <div class="proj-hero-lbl">Kilos proyectados</div>
+        <div class="proj-hero-val" id="pkK">—</div>
+        <div class="proj-hero-subitem" id="pkKSub">Total proyectado del período</div>
+      </div>
+      <div class="proj-hero-item tea">
+        <div class="proj-hero-lbl" id="pcBaseLbl">Cierre mes 2025</div>
+        <div class="proj-hero-val" id="pcBase">—</div>
+        <div class="proj-hero-subitem" id="pcBaseSub">Base histórica</div>
+      </div>
+      <div class="proj-hero-item neutral" id="pcDeltaKgCard">
+        <div class="proj-hero-lbl">Variación Kg</div>
+        <div class="proj-hero-val" id="pcDeltaKg">—</div>
+        <div class="proj-hero-subitem" id="pcDeltaKgSub">vs 2025</div>
+      </div>
+      <div class="proj-hero-item neutral" id="pcDeltaPctCard">
+        <div class="proj-hero-lbl">Variación %</div>
+        <div class="proj-hero-val" id="pcDeltaPct">—</div>
+        <div class="proj-hero-subitem" id="pcDeltaPctSub">vs 2025</div>
+      </div>
+      <div class="proj-hero-item blu">
+        <div class="proj-hero-lbl" id="pcLatestLbl">Última fecha con ventas</div>
+        <div class="proj-hero-val sm" id="pcLatest">—</div>
+        <div class="proj-hero-subitem" id="pcLatestSub">Kilos del último día disponible</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grupo-strip-lbl">Kilos proyectados por Grupo de Familia</div>
+  <div class="grupo-strip" id="pGrupoStrip"></div>
+  <div class="grupo-strip-hint" id="pGroupHint">Hacé click en uno o más grupos para abrir el detalle completo. Volvé a hacer click para regresar al resumen por cliente.</div>
+
+  <div class="card projection-family-summary-card">
+    <div class="ch"><div class="ct">Resumen ejecutivo por Familia</div><span class="cbadge" id="projectionFamilySummaryBadge">—</span></div>
+    <div class="projection-family-summary-note" id="projectionFamilySummaryNote"></div>
+    <div class="tw projection-hierarchy-wrap projection-hierarchy-wrap--no-fade">
+      <table class="projection-hierarchy-table projection-family-summary-table" id="projectionFamilySummaryTable">
+        <thead><tr>
+          <th>Resumen</th><th class="r" id="projectionFamilySummaryHeadCompare">2025</th><th class="r" id="projectionFamilySummaryHeadProjected">Proyección</th><th class="r">Var. Kg</th><th class="r">Var. %</th>
+        </tr></thead>
+        <tbody id="projectionFamilySummaryBody"><tr><td colspan="5"><div class="empty"><div class="eico">🧮</div><p>Completá los días hábiles para ver el resumen proyectado por familia.</p></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card projection-hierarchy-card projection-product-card">
+    <div class="ch"><div class="ct">Proyección por Familia y Producto</div><span class="cbadge" id="projectionProductHierarchyBadge">—</span></div>
+    <div class="projection-hierarchy-toolbar" id="projectionProductHierarchyTools"></div>
+    <div class="tw projection-hierarchy-wrap projection-hierarchy-wrap--no-fade">
+      <table class="projection-hierarchy-table" id="projectionProductHierarchyTable">
+        <thead><tr>
+          <th>Etiquetas de fila</th><th class="r" id="projectionProductHierarchyHeadCompare">2025</th><th class="r" id="projectionProductHierarchyHeadProjected">Proyección</th><th class="r">Var. Kg</th><th class="r">Var. %</th>
+        </tr></thead>
+        <tbody id="projectionProductHierarchyBody"><tr><td colspan="5"><div class="empty"><div class="eico">🧮</div><p>Completá los días hábiles para ver la proyección por familia y producto.</p></div></td></tr></tbody>
+      </table>
+    </div>
+    <div class="snote" id="projectionProductHierarchyNote"></div>
+  </div>
+
+  <div class="card projection-hierarchy-card">
+    <div class="ch"><div class="ct">Proyección por Coordinador y Agente</div><span class="cbadge" id="projectionHierarchyBadge">—</span></div>
+    <div class="projection-hierarchy-toolbar" id="projectionHierarchyTools"></div>
+    <div class="tw projection-hierarchy-wrap">
+      <table class="projection-hierarchy-table" id="projectionHierarchyTable">
+        <thead><tr>
+          <th>Etiquetas de fila</th><th class="r" id="projectionHierarchyHeadCompare">2025</th><th class="r" id="projectionHierarchyHeadProjected">Proyección</th><th class="r">Var. Kg</th><th class="r">Var. %</th>
+        </tr></thead>
+        <tbody id="projectionHierarchyBody"><tr><td colspan="5"><div class="empty"><div class="eico">🧮</div><p>Completá los días hábiles para ver la proyección jerárquica.</p></div></td></tr></tbody>
+      </table>
+    </div>
+    <div class="snote" id="projectionHierarchyNote"></div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ct" id="pdetailTitle">Detalle proyectado</div><span class="cbadge" id="ptbadge">—</span></div>
+    <div class="detail-toolbar detail-toolbar--subtle" id="projectionTools"></div>
+    <div class="tw">
+      <table class="responsive-stack responsive-stack--projection">
+        <thead id="pthead"><tr>
+          <th>Fecha</th><th>Cliente</th><th class="r">Kilos 2025</th><th class="r">Kilos Proy.</th><th class="r">Var. Kg</th><th class="r">Var. %</th>
+        </tr></thead>
+        <tbody id="ptbody"><tr><td colspan="9"><div class="empty"><div class="eico">🧮</div><p>Completá los días hábiles para ver la proyección.</p></div></td></tr></tbody>
+      </table>
+    </div>
+    <div class="snote" id="psnote"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ PAGE: ACUMULADOS ══════════ -->
+<div class="page" id="page-acumulados">
+<div class="wrap">
+
+  <div class="kpi-row">
+    <div class="kpi a"><div class="kpi-lbl">Total Kilos</div><div class="kpi-val" id="akK">—</div></div>
+    <div class="kpi b"><div class="kpi-lbl">Clientes</div><div class="kpi-val" id="akC">—</div></div>
+    <div class="kpi g"><div class="kpi-lbl">Agentes</div><div class="kpi-val" id="akA">—</div></div>
+    <div class="kpi p"><div class="kpi-lbl">Registros</div><div class="kpi-val" id="akR">—</div></div>
+  </div>
+
+  <div class="story-grid" id="acumStoryGrid"></div>
+
+  <div class="card acum-explorer-card">
+    <div class="ch"><div class="ct" id="acumExplorerTitle">Explorador de acumulados</div><span class="cbadge" id="acumExplorerBadge">—</span></div>
+    <div class="detail-toolbar detail-toolbar--subtle" id="acumExplorerTools"></div>
+    <div class="tw"><table class="acum-table responsive-stack responsive-stack--acum">
+      <thead id="acumExplorerHead"><tr><th>#</th><th>Nombre</th><th class="r">Kilos</th><th class="r">%</th></tr></thead>
+      <tbody id="acumExplorerBody"><tr><td colspan="4"><div class="empty"><div class="eico">📈</div><p>Cargando acumulados...</p></div></td></tr></tbody>
+    </table></div>
+    <div class="snote" id="acumExplorerNote"></div>
+  </div>
+
+  <div class="acum-grid">
+
+    <!-- Por Coordinador -->
+    <div class="card">
+      <div class="ch"><div class="ct">Por Coordinador</div><span class="cbadge" id="ab1">—</span></div>
+      <div class="tw"><table class="acum-table acum-table--coord responsive-stack responsive-stack--acum">
+        <thead><tr><th>#</th><th>Coordinador</th><th class="r">Kilos</th><th class="r">%</th><th>Dist.</th></tr></thead>
+        <tbody id="at-coord"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Por Agente -->
+    <div class="card">
+      <div class="ch"><div class="ct">Por Agente</div><span class="cbadge" id="ab2">—</span></div>
+      <div class="tw"><table class="acum-table acum-table--agent responsive-stack responsive-stack--acum">
+        <thead><tr><th>#</th><th>Agente</th><th class="r">Kilos</th><th class="r">%</th><th>Dist.</th></tr></thead>
+        <tbody id="at-agte"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Por Grupo de Familia -->
+    <div class="card">
+      <div class="ch"><div class="ct">Por Grupo de Familia</div><span class="cbadge" id="ab3">—</span></div>
+      <div class="tw"><table class="acum-table acum-table--group responsive-stack responsive-stack--acum">
+        <thead><tr><th>#</th><th>Grupo</th><th class="r">Kilos</th><th class="r">%</th><th>Dist.</th></tr></thead>
+        <tbody id="at-grp"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Por Marca -->
+    <div class="card">
+      <div class="ch"><div class="ct">Por Marca</div><span class="cbadge" id="ab4">—</span></div>
+      <div class="tw"><table class="acum-table acum-table--brand responsive-stack responsive-stack--acum">
+        <thead><tr><th>#</th><th>Marca</th><th class="r">Kilos</th><th class="r">%</th><th>Dist.</th></tr></thead>
+        <tbody id="at-mrc"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Por Cliente (full width) -->
+    <div class="card" style="grid-column:1/-1">
+      <div class="ch"><div class="ct">Por Cliente (Top 20)</div><span class="cbadge" id="ab5">—</span></div>
+      <div class="tw"><table class="acum-table acum-table--client-top20 responsive-stack responsive-stack--acum">
+        <thead><tr><th>#</th><th>Cliente</th><th>Coord.</th><th>Agente</th><th class="r">Kilos</th><th class="r">%</th><th>Dist.</th></tr></thead>
+        <tbody id="at-clie"></tbody>
+      </table></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ══════════ PAGE: RESUMEN ACUMULADO (v30) ══════════ -->
+<div class="page" id="page-resumen-acum">
+<div class="wrap">
+
+  <div class="acsum-toolbar" id="acsumToolbar">
+    <div>
+      <label>Período</label>
+      <div class="acsum-mode-btns" role="tablist" aria-label="Modo de acumulado">
+        <button type="button" class="acsum-mode-btn on" data-mode="compare" role="tab" aria-selected="true"  title="Período del filtro activo vs mismo período del año anterior">⇆ Vs año ant.</button>
+        <button type="button" class="acsum-mode-btn"    data-mode="ytd"     role="tab" aria-selected="false" title="YTD 1-Ene hasta hoy vs mismo rango del año anterior">📅 YTD</button>
+        <button type="button" class="acsum-mode-btn"    data-mode="total"   role="tab" aria-selected="false" title="Total 2026 vs total 2025 (ignora el rango de fechas)">∑ Total</button>
+      </div>
+    </div>
+    <div>
+      <label>Vista</label>
+      <div class="acsum-view-btns" role="tablist" aria-label="Dimensión de la vista">
+        <button type="button" class="acsum-view-btn on" data-view="grupo"       role="tab" aria-selected="true">Familia</button>
+        <button type="button" class="acsum-view-btn"    data-view="coordinador" role="tab" aria-selected="false">Coordinador</button>
+        <button type="button" class="acsum-view-btn"    data-view="agente"      role="tab" aria-selected="false">Agente</button>
+        <button type="button" class="acsum-view-btn"    data-view="region"      role="tab" aria-selected="false">Región</button>
+      </div>
+    </div>
+    <div style="margin-left:auto">
+      <button type="button" class="btn-xs" id="acsumRefresh">↻ Actualizar</button>
+    </div>
+  </div>
+
+  <div class="acsum-meta" id="acsumMeta">
+    <span class="acsum-meta-pill" id="acsumMetaMode">Período vs año anterior</span>
+    <span class="acsum-meta-pill" id="acsumMetaView">Vista: Familia</span>
+    <span class="acsum-meta-pill" id="acsumMetaCount">— filas</span>
+    <span class="acsum-meta-pill" id="acsumMetaRange" hidden></span>
+  </div>
+
+  <div class="card">
+    <div class="ch">
+      <div class="ct" id="acsumTitle">Ventas acumuladas filtradas por Familia</div>
+      <span class="cbadge" id="acsumBadge">—</span>
+    </div>
+    <div class="tw">
+      <table class="acsum-table">
+        <thead id="acsumHead"><tr><th>#</th><th>Familia</th><th class="r">Kilos año ant.</th><th class="r">Kilos actual</th><th class="r col-varkg">Var Kg</th><th class="r">Var %</th><th class="r col-pct-total">% Total</th></tr></thead>
+        <tbody id="acsumBody"><tr><td colspan="7"><div class="empty"><div class="eico">📚</div><p>Cargando resumen acumulado...</p></div></td></tr></tbody>
+        <tfoot id="acsumFoot"></tfoot>
+      </table>
+    </div>
+    <div class="snote" id="acsumNote"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════ PAGE: FRECUENCIA DE COMPRA (v38) ══════════ -->
+<div class="page" id="page-frecuencia">
+<div class="wrap">
+
+  <!-- Toolbar principal -->
+  <div class="freq-toolbar" id="freqToolbar">
+
+    <!-- Selector de modo -->
+    <div>
+      <label>Análisis</label>
+      <div class="freq-mode-btns" role="tablist" aria-label="Modo de análisis">
+        <button type="button" class="freq-mode-btn on" data-mode="cadencia"
+          role="tab" aria-selected="true"
+          title="Compras/semana y compras/mes reales por entidad">
+          📊 Cadencia
+        </button>
+        <button type="button" class="freq-mode-btn" data-mode="patron"
+          role="tab" aria-selected="false"
+          title="Qué días de la semana tiende a comprar cada cliente">
+          📅 Patrón semanal
+        </button>
+      </div>
+    </div>
+
+    <!-- Vista (solo cadencia) -->
+    <div id="freqViewRow">
+      <label>Vista</label>
+      <div class="freq-view-btns" role="tablist" aria-label="Dimensión de la vista">
+        <button type="button" class="freq-view-btn on" data-view="cliente"      role="tab" aria-selected="true">Cliente</button>
+        <button type="button" class="freq-view-btn"    data-view="agente"       role="tab" aria-selected="false">Agente</button>
+        <button type="button" class="freq-view-btn"    data-view="coordinador"  role="tab" aria-selected="false">Coordinador</button>
+      </div>
+    </div>
+
+    <!-- Filtro de familia interno -->
+    <div>
+      <label>Familia</label>
+      <select id="freqGrupoSel" class="freq-grupo-sel" title="Filtrar por familia de producto">
+        <option value="">Todas las familias</option>
+      </select>
+    </div>
+
+    <div style="margin-left:auto">
+      <button type="button" class="btn-xs" id="freqRefresh">↻ Actualizar</button>
+    </div>
+  </div>
+
+  <!-- Pills de estado -->
+  <div class="freq-meta" id="freqMeta">
+    <span class="freq-meta-pill" id="freqMetaMode">Cadencia de compra</span>
+    <span class="freq-meta-pill" id="freqMetaView">por Cliente</span>
+    <span class="freq-meta-pill" id="freqMetaCount">— filas</span>
+    <span class="freq-meta-pill freq-meta-pill-familia" id="freqMetaGrupoWrap" hidden>
+      <span id="freqMetaGrupo">—</span>
+    </span>
+  </div>
+
+  <!-- Panel de segmentos (solo cadencia) -->
+  <div class="freq-seg-shell" id="freqSegShell">
+    <span class="freq-seg-shell-label">Segmento</span>
+    <div id="freqSegPanel"></div>
+  </div>
+
+  <!-- Tabla principal -->
+  <div class="card">
+    <div class="ch">
+      <div class="ct" id="freqTitle">Cadencia de compra por Cliente</div>
+      <span class="cbadge" id="freqBadge">—</span>
+    </div>
+    <div class="tw">
+      <table class="freq-table">
+        <thead id="freqHead">
+          <tr>
+            <th class="freq-th-num">#</th>
+            <th>Cliente</th>
+            <th class="r">Compras / sem.</th>
+            <th class="r">Compras / mes</th>
+            <th class="r">Días con compra</th>
+            <th class="r">Última compra</th>
+            <th class="r">Sin comprar</th>
+            <th>Segmento</th>
+          </tr>
+        </thead>
+        <tbody id="freqBody">
+          <tr><td colspan="8"><div class="empty"><div class="eico">🔄</div><p>Cargando frecuencia de compra...</p></div></td></tr>
+        </tbody>
+        <tfoot id="freqFoot"></tfoot>
+      </table>
+    </div>
+    <div class="snote" id="freqNote">
+      Compras/semana = días distintos con compra dividido por semanas del período. Ejemplo: cliente que compra todos los lunes → 1.0/sem, 4.3/mes.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════ PAGE: GRÁFICOS ══════════ -->
+<div class="page" id="page-graficos">
+<div class="wrap">
+
+  <div class="story-grid" id="graphStoryGrid"></div>
+
+  <div class="charts-grid">
+
+    <div class="card">
+      <div class="ch"><div class="ct">📦 Kilos por Grupo</div></div>
+      <div class="hbars" id="gGrupo"><div class="chart-empty">Sin datos</div></div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ct">🍩 Distribución Grupos</div></div>
+      <div class="donut-wrap" id="gDonut"><div class="chart-empty">Sin datos</div></div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ct">🏷️ Kilos por Marca</div></div>
+      <div class="hbars" id="gMarca"><div class="chart-empty">Sin datos</div></div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ct">👤 Kilos por Agente (Top 10)</div></div>
+      <div class="hbars" id="gAgte"><div class="chart-empty">Sin datos</div></div>
+    </div>
+
+  </div>
+
+  <div class="card detail-trend-card">
+    <div class="ch">
+      <div>
+        <div class="ct">🗓️ Evolución diaria comparada</div>
+        <div class="detail-subhead" id="graphDailyContext">Mes de referencia —</div>
+      </div>
+      <span class="cbadge" id="graphDailyBadge">—</span>
+    </div>
+    <div class="detail-chart-note" id="graphDailyNote">Comparativa diaria del mes filtrado frente a sus dos meses anteriores.</div>
+    <div class="daily-compare-wrap" id="graphDailyChart"><div class="chart-empty">Sin datos temporales</div></div>
+  </div>
+
+  <!-- Full width: temporal -->
+  <div class="card">
+    <div class="ch">
+      <div class="ct">📅 Evolución mensual de Kilos</div>
+      <span class="cbadge" id="lcBadge">—</span>
+    </div>
+    <div class="lc-wrap" id="gLinea"><div class="chart-empty">Sin datos temporales</div></div>
+  </div>
+
+  <!-- Full width: top clientes -->
+  <div class="card">
+    <div class="ch"><div class="ct">🏆 Top 10 Clientes</div></div>
+    <div class="hbars" id="gClie"><div class="chart-empty">Sin datos</div></div>
+  </div>
+
+</div>
+</div>
+
+<div class="filter-backdrop" id="filterBackdrop" aria-hidden="true"></div>
+
+<div class="mobile-dock" id="mobileDock" aria-label="Accesos rápidos">
+  <button type="button" class="mobile-dock-btn" id="mobileFiltersBtn">
+    <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+    Filtros
+  </button>
+  <button type="button" class="mobile-dock-btn" id="mobileSummaryBtn">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+    Detalle
+  </button>
+  <button type="button" class="mobile-dock-btn" id="mobileTopBtn">
+    <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+    Subir
+  </button>
+</div>
+
+<script src="app_version.js"></script>
+<script src="config.js"></script>
+<script src="app_shared.js"></script>
+<script type="module" src="app.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════
+// VENTAS DASH — Asistente IA v9
+// ✅ Compatible con backend JSON y SSE
+// ✅ Reutiliza la misma autenticación del tablero
+// ✅ Historial de conversación (3 intercambios)
+// ✅ Mensajes y estado alineados con el backend activo
+// ══════════════════════════════════════════════════════════════════
+const AI_V = "2026-04-v12"; // v39
+const AI_AUTH_STORAGE_KEY = "ventasDashBasicAuth";
+const AI_QUICK_PREF_KEY = "ventasDashAiQuickExpanded";
+let conversationHistory = [];   // {role, content}[]
+
+// v39: presets contextuales según tab activa
+const AI_PRESETS_BY_TAB = {
+  "detalle": [
+    { label: "Informe del período", q: "Generá un informe ejecutivo del período actual" },
+    { label: "Top clientes", q: "¿Cuáles son los top 10 clientes por kilos?" },
+    { label: "Por región", q: "Mostrame las ventas por región" },
+    { label: "Alertas", q: "¿Hay alguna alerta comercial que deba atender?" },
+    { label: "YTD vs 2025", q: "¿Cuál es el acumulado del año comparado con 2025?" },
+    { label: "Clientes perdidos", q: "¿Qué clientes se perdieron respecto al año pasado?" },
+  ],
+  "proyeccion": [
+    { label: "Cierre del mes", q: "¿Cómo va el cierre proyectado del mes?" },
+    { label: "Top familias", q: "¿Qué familias lideran la proyección del mes?" },
+    { label: "Variación vs 2025", q: "Compará la proyección actual con el cierre de 2025" },
+    { label: "Clientes en proyección", q: "¿Cuántos clientes están activos en la proyección?" },
+    { label: "Mejor agente", q: "¿Qué agente tiene mejor performance proyectada?" },
+    { label: "Informe proyección", q: "Dame un informe ejecutivo de la proyección" },
+  ],
+  "acumulados": [
+    { label: "Concentración", q: "¿Cuánto representa el top 3 de clientes en el total?" },
+    { label: "Por coordinador", q: "Mostrame el ranking de coordinadores por kilos" },
+    { label: "Por grupo", q: "¿Qué familias tienen mayor participación?" },
+    { label: "YTD vs 2025", q: "¿Cómo va el acumulado del año vs 2025?" },
+    { label: "Alertas", q: "¿Hay alertas de concentración o caídas que atender?" },
+    { label: "Informe acumulados", q: "Generá un informe de acumulados del período" },
+  ],
+  "resumen-acum": [
+    { label: "Informe comparativo", q: "Generá un informe comparativo 2025 vs 2026" },
+    { label: "Top familias", q: "¿Qué familias crecieron más vs el año pasado?" },
+    { label: "Quién bajó", q: "¿Qué familia o coordinador bajó más vs 2025?" },
+    { label: "YTD total", q: "¿Cuál es el YTD acumulado comparado con 2025?" },
+    { label: "Por región", q: "Compará las regiones 2025 vs 2026" },
+    { label: "Variación %", q: "¿Cuál es la variación porcentual del período vs el año anterior?" },
+  ],
+  "frecuencia": [
+    { label: "Clientes frecuentes", q: "¿Cuáles son los clientes con mayor frecuencia de compra?" },
+    { label: "Clientes en riesgo", q: "¿Qué clientes están en riesgo de inactividad?" },
+    { label: "Inactivos", q: "¿Cuántos clientes llevan más de 90 días sin comprar?" },
+    { label: "Cadencia promedio", q: "¿Cuál es la cadencia promedio de compra del período?" },
+    { label: "Ticket promedio", q: "¿Cuál es el pedido promedio por cliente?" },
+    { label: "Alertas frecuencia", q: "Dame alertas de clientes con baja frecuencia de compra" },
+  ],
+  "graficos": [
+    { label: "Tendencia mensual", q: "¿Cuál es la tendencia de ventas de los últimos meses?" },
+    { label: "Mejor mes", q: "¿Qué mes tuvo el mayor volumen de ventas?" },
+    { label: "Marcas líderes", q: "¿Cuáles son las marcas con mayor participación?" },
+    { label: "Evolución clientes", q: "¿Cómo evolucionó la cantidad de clientes activos?" },
+    { label: "Informe visual", q: "Generá un informe ejecutivo del período visible" },
+    { label: "Alertas", q: "¿Hay alertas relevantes en las tendencias actuales?" },
+  ],
+};
+const AI_PRESETS_DEFAULT = AI_PRESETS_BY_TAB["detalle"];
+
+(function(){
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",initAI,{once:true});
+  else initAI();
+})();
+
+function initAI(){
+  if(window.__ai8) return; window.__ai8=true;
+  const base=(document.querySelector('meta[name="ventas-api-base"]')?.content||"").replace(/\/$/,"");
+  if(!base) return;
+  injectAIStyles();
+  injectAIMarkup();
+  bindAIEvents(base);
+}
+
+// ── ESTILOS ─────────────────────────────────────────────────────────
+function injectAIStyles(){
+  if(document.getElementById("ai8-css")) return;
+  const s=document.createElement("style"); s.id="ai8-css";
+  s.textContent=`
+  /* FAB */
+  #aiFab{position:fixed;right:18px;bottom:88px;z-index:1100;width:54px;height:54px;
+    border-radius:999px;border:1px solid rgba(245,158,11,.45);
+    background:linear-gradient(135deg,#f5a623,#d97706);color:#07090f;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 28px rgba(245,166,35,.38);
+    transition:transform .15s ease,box-shadow .15s ease;}
+  #aiFab:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(245,166,35,.48);}
+  #aiFab.busy{animation:ai8-pulse 1.1s ease infinite;}
+  @keyframes ai8-pulse{0%,100%{box-shadow:0 8px 28px rgba(245,166,35,.38)}50%{box-shadow:0 8px 40px rgba(245,166,35,.72)}}
+
+  /* Panel */
+  #aiPanel{position:fixed;right:18px;bottom:154px;
+    width:min(440px,calc(100vw - 20px));height:min(660px,calc(100vh - 176px));
+    z-index:1200;display:none;flex-direction:column;
+    background:#07090f;color:#eaf0fb;
+    border:1px solid rgba(245,158,11,.24);border-radius:22px;
+    overflow:hidden;box-shadow:0 32px 88px rgba(0,0,0,.64),0 0 0 1px rgba(245,166,35,.06);}
+  #aiPanel.open{display:flex;animation:ai8-in .18s cubic-bezier(.4,0,.2,1);}
+  @keyframes ai8-in{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+
+  /* Header */
+  .aih{padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;
+    background:linear-gradient(135deg,rgba(245,166,35,.13),rgba(245,166,35,.03));}
+  .aih-l{display:flex;align-items:center;gap:10px;}
+  .aih-ico{font-size:22px;line-height:1;}
+  .aih-title{font:800 14px/1.2 'Syne',sans-serif;color:#ffd07a;}
+  .aih-sub{font:500 10.5px/1.35 'DM Sans',sans-serif;color:rgba(255,208,122,.52);margin-top:3px;}
+  .aih-badge{background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);
+    border-radius:999px;padding:2px 7px;font:700 9px/1.4 'Syne',sans-serif;
+    color:#93c5ff;letter-spacing:.4px;margin-top:2px;display:inline-block;}
+  .aih-r{display:flex;gap:6px;}
+  .ai-btn{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);
+    color:rgba(234,240,251,.65);border-radius:8px;padding:6px 10px;cursor:pointer;
+    font:600 11px/1 'DM Sans',sans-serif;transition:all .14s ease;}
+  .ai-btn:hover{border-color:rgba(245,166,35,.4);color:#ffd07a;background:rgba(245,166,35,.09);}
+
+  /* Mensajes */
+  .ai-msgs{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;
+    scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;}
+  .ai-m{max-width:94%;border-radius:14px;padding:11px 13px;
+    font:500 13px/1.56 'DM Sans',sans-serif;word-break:break-word;}
+  .ai-m.user{align-self:flex-end;background:rgba(245,166,35,.17);
+    border:1px solid rgba(245,166,35,.28);color:#fff3d6;border-radius:14px 14px 4px 14px;}
+  .ai-m.bot{align-self:flex-start;background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);color:#e8eef8;border-radius:14px 14px 14px 4px;
+    min-width:60px;}
+  .ai-m.bot strong,.ai-m.bot b{color:#ffd07a;}
+  .ai-m.bot ul{margin:6px 0 4px 14px;list-style:disc;}
+  .ai-m.bot li{margin-bottom:3px;}
+  .ai-m.err{align-self:center;max-width:100%;background:rgba(255,90,90,.09);
+    border:1px solid rgba(255,90,90,.22);color:#fca5a5;font-size:12px;border-radius:10px;}
+
+  /* Cursor de streaming */
+  .ai-cursor{display:inline-block;animation:ai8-blink .65s step-end infinite;
+    color:#ffd07a;margin-left:1px;font-weight:800;}
+  @keyframes ai8-blink{0%,100%{opacity:1}50%{opacity:0}}
+  .ai-m.bot.streaming{border-color:rgba(245,158,11,.22)!important;}
+
+  /* Quick prompts */
+  .ai-quick-shell{display:grid;gap:0;flex-shrink:0;border-top:1px solid rgba(255,255,255,.06);
+    background:rgba(7,9,15,.58);}
+  .ai-quick-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    width:100%;padding:9px 14px;border:none;background:transparent;cursor:pointer;
+    color:#eaf0fb;font:600 11px/1 'DM Sans',sans-serif;text-align:left;}
+  .ai-quick-toggle:hover{background:rgba(255,255,255,.03);}
+  .ai-quick-toggle-main,.ai-quick-toggle-side{display:flex;align-items:center;gap:8px;min-width:0;}
+  .ai-quick-toggle-side{flex-shrink:0;}
+  .ai-quick-toggle-title{color:rgba(234,240,251,.86);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ai-quick-toggle-meta{color:rgba(234,240,251,.46);font-size:10px;white-space:nowrap;}
+  .ai-quick-toggle-chevron{color:rgba(245,166,35,.76);font-size:12px;transition:transform .18s ease;}
+  .ai-quick-shell.is-open .ai-quick-toggle-chevron{transform:rotate(180deg);}
+  .ai-quick-panel{max-height:0;overflow:hidden;opacity:0;
+    transition:max-height .2s ease,opacity .18s ease;}
+  .ai-quick-shell.is-open .ai-quick-panel{max-height:180px;opacity:1;}
+  .ai-quick{padding:0 14px 10px;display:flex;flex-wrap:wrap;gap:5px;
+    overflow-y:auto;max-height:170px;scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.12) transparent;}
+  .ai-qbtn{border:1px solid rgba(255,255,255,.09);background:rgba(17,24,39,.9);
+    color:rgba(234,240,251,.62);border-radius:20px;padding:4px 10px;cursor:pointer;
+    font:500 10.5px/1 'DM Sans',sans-serif;transition:all .13s ease;white-space:nowrap;}
+  .ai-qbtn:hover{border-color:rgba(245,166,35,.36);color:#ffd07a;
+    background:rgba(245,166,35,.09);transform:translateY(-1px);}
+
+  /* Footer */
+  .ai-foot{border-top:1px solid rgba(255,255,255,.07);padding:11px 12px;
+    background:rgba(5,8,14,.96);display:grid;gap:8px;flex-shrink:0;}
+  .ai-ctx{display:flex;align-items:center;justify-content:space-between;
+    font:500 11px/1 'DM Sans',sans-serif;color:rgba(234,240,251,.5);}
+  .ai-ctx-l{display:flex;align-items:center;gap:7px;}
+  #aiUseCtx{accent-color:#f59e0b;width:14px;height:14px;cursor:pointer;}
+  #aiCtxBadge{background:rgba(245,166,35,.11);border:1px solid rgba(245,166,35,.2);
+    border-radius:999px;padding:2px 8px;font-size:10px;color:#ffd07a;font-weight:700;
+    white-space:nowrap;transition:all .28s;}
+  #aiCtxBadge.active{background:rgba(34,213,138,.12);border-color:rgba(34,213,138,.28);color:#6ee7b7;}
+  #aiHistBadge{font:600 10px/1 'DM Sans',sans-serif;color:rgba(74,158,255,.75);
+    background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.2);
+    border-radius:999px;padding:2px 7px;display:none;}
+  #aiHistBadge.visible{display:inline;}
+  #aiInput{width:100%;min-height:70px;max-height:130px;resize:vertical;border-radius:12px;
+    border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#fff;
+    padding:10px 12px;outline:none;font:500 13px/1.45 'DM Sans',sans-serif;
+    transition:border-color .18s,box-shadow .18s;}
+  #aiInput:focus{border-color:rgba(245,166,35,.48);box-shadow:0 0 0 3px rgba(245,166,35,.1);}
+  #aiInput::placeholder{color:rgba(255,255,255,.26);}
+  .ai-foot-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  #aiStatus{font:500 11px/1 'DM Sans',sans-serif;color:rgba(234,240,251,.4);
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+  #aiSend{min-width:96px;border:none;border-radius:10px;padding:9px 14px;cursor:pointer;
+    font:700 12px/1 'Syne',sans-serif;background:linear-gradient(135deg,#f5a623,#d97706);
+    color:#07090f;box-shadow:0 6px 18px rgba(245,166,35,.3);transition:all .14s ease;flex-shrink:0;}
+  #aiSend:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,166,35,.42);}
+  #aiSend:disabled{opacity:.5;cursor:wait;transform:none;}
+  @media(max-width:640px){
+    #aiFab{right:12px;bottom:74px;width:50px;height:50px;}
+    #aiPanel{right:8px;left:8px;width:auto;bottom:136px;height:min(74vh,600px);}
+    .ai-quick-shell.is-open .ai-quick-panel{max-height:132px;}
+    .ai-quick{gap:4px;} .ai-qbtn{font-size:10px;padding:4px 8px;}
+    .ai-quick-toggle{padding:8px 12px;}
+    .ai-quick-toggle-meta{display:none;}
+  }`;
+  document.head.appendChild(s);
+}
+
+// ── MARKUP ──────────────────────────────────────────────────────────
+function injectAIMarkup(){
+  if(document.getElementById("aiFab")) return;
+  const fab=document.createElement("button");
+  fab.id="aiFab"; fab.type="button"; fab.setAttribute("aria-label","Asistente IA");
+  fab.innerHTML=`<span style="font-size:20px;line-height:1">🤖</span>`;
+
+  const panel=document.createElement("aside");
+  panel.id="aiPanel"; panel.setAttribute("aria-label","Asistente de IA");
+  panel.innerHTML=`
+    <div class="aih">
+      <div class="aih-l">
+        <span class="aih-ico">🤖</span>
+        <div>
+          <div class="aih-title">Asistente IA</div>
+          <div class="aih-sub">Consulta datos reales · 2025 &amp; 2026</div>
+          <span class="aih-badge">IA contextual</span>
+        </div>
+      </div>
+      <div class="aih-r">
+        <button class="ai-btn" id="aiClear" type="button">Limpiar</button>
+        <button class="ai-btn" id="aiClose" type="button">✕</button>
+      </div>
+    </div>
+    <div class="ai-msgs" id="aiMsgs"></div>
+    <div class="ai-quick-shell" id="aiQuickShell">
+      <button class="ai-quick-toggle" id="aiQuickToggle" type="button" aria-expanded="false" aria-controls="aiQuickPanel">
+        <span class="ai-quick-toggle-main">
+          <span aria-hidden="true">⚡</span>
+          <span class="ai-quick-toggle-title">Presets y preguntas rápidas</span>
+        </span>
+        <span class="ai-quick-toggle-side">
+          <span class="ai-quick-toggle-meta" id="aiQuickMeta">6 sugerencias</span>
+          <span class="ai-quick-toggle-chevron" aria-hidden="true">▾</span>
+        </span>
+      </button>
+      <div class="ai-quick-panel" id="aiQuickPanel">
+        <div class="ai-quick" id="aiQuick">
+          <button class="ai-qbtn" data-q="Generá un informe ejecutivo del período actual">Informe del período</button>
+          <button class="ai-qbtn" data-q="¿Cuáles son los top 10 clientes por kilos?">Top clientes</button>
+          <button class="ai-qbtn" data-q="¿Cuál es el acumulado del año comparado con 2025?">YTD vs 2025</button>
+          <button class="ai-qbtn" data-q="¿Hay alguna alerta comercial que deba atender?">Alertas</button>
+          <button class="ai-qbtn" data-q="¿Qué clientes se perdieron respecto al año pasado?">Clientes perdidos</button>
+          <button class="ai-qbtn" data-q="Mostrame las ventas por región">Por región</button>
+        </div>
+      </div>
+    </div>
+    <div class="ai-foot">
+      <div class="ai-ctx">
+        <label class="ai-ctx-l">
+          <input id="aiUseCtx" type="checkbox" checked />
+          <span>Incluir filtros del tablero</span>
+        </label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span id="aiHistBadge">↩ con historial</span>
+          <code id="aiCtxBadge">leyendo...</code>
+        </div>
+      </div>
+      <textarea id="aiInput" placeholder="Ej: compará las ventas de marzo 2025 vs marzo 2026 para MIENKO — Ctrl+Enter para enviar"></textarea>
+      <div class="ai-foot-row">
+        <div id="aiStatus">Listo · Ctrl+Enter para enviar</div>
+        <button id="aiSend" type="button">Enviar ↵</button>
+      </div>
+    </div>`;
+  document.body.appendChild(fab);
+  document.body.appendChild(panel);
+  addInitialMsg(document.getElementById("aiMsgs"));
+}
+
+function addInitialMsg(container){
+  const el=document.createElement("div");
+  el.className="ai-m bot";
+  el.innerHTML=`Hola 👋 Soy el asistente analítico de <strong>Ventas Dash</strong>.<br><br>
+Trabajo con datos reales del tablero y conservo hasta <strong>3 intercambios recientes</strong> para seguir el hilo.<br><br>
+<strong>¿Qué puedo hacer?</strong>
+<ul>
+  <li>📊 <strong>Informes ejecutivos</strong> — "generá un informe del período"</li>
+  <li>⚠️ <strong>Alertas comerciales</strong> — "¿hay alertas que atender?"</li>
+  <li>📈 <strong>Comparativas 2025 vs 2026</strong> — "compará enero 2025 vs 2026"</li>
+  <li>🔄 <strong>Frecuencia de compra</strong> — "clientes en riesgo / inactivos"</li>
+  <li>🏆 <strong>Rankings</strong> — "top clientes / familias / agentes / regiones"</li>
+  <li>👥 <strong>Clientes nuevos o perdidos</strong> entre períodos</li>
+  <li>📅 <strong>Acumulado YTD</strong> — "cómo va el acumulado vs 2025"</li>
+  <li>🎯 <strong>Ticket promedio</strong> — "pedido promedio por cliente"</li>
+  <li>📉 <strong>Top movers</strong> — "qué familias bajaron más"</li>
+  <li>⬇️ <strong>Exportar</strong> — los informes y rankings se pueden bajar en PDF, Excel o CSV</li>
+</ul>
+<span style="font-size:11px;opacity:.6">Los presets de abajo cambian según la pestaña activa del tablero.</span>`;
+  container.appendChild(el);
+}
+
+// ── EVENTOS ─────────────────────────────────────────────────────────
+function bindAIEvents(apiBase){
+  const fab   = document.getElementById("aiFab");
+  const panel = document.getElementById("aiPanel");
+  const input = document.getElementById("aiInput");
+  const msgs  = document.getElementById("aiMsgs");
+  const send  = document.getElementById("aiSend");
+  const useCtx= document.getElementById("aiUseCtx");
+  const badge = document.getElementById("aiCtxBadge");
+  const hBadge= document.getElementById("aiHistBadge");
+  const quick = document.getElementById("aiQuick");
+  const quickShell = document.getElementById("aiQuickShell");
+  const quickToggle = document.getElementById("aiQuickToggle");
+  const quickMeta = document.getElementById("aiQuickMeta");
+  if(!fab||!panel||!send||!input||!msgs) return;
+
+  useCtx.checked = true;
+
+  function readQuickPref(){
+    try{
+      const saved = localStorage.getItem(AI_QUICK_PREF_KEY);
+      if(saved === "1" || saved === "0") return saved === "1";
+    }catch(_){ }
+    return false;
+  }
+  function writeQuickPref(expanded){
+    try{ localStorage.setItem(AI_QUICK_PREF_KEY, expanded ? "1" : "0"); }catch(_){ }
+  }
+  function updateQuickMeta(){
+    if(!quickMeta || !quick) return;
+    const total = quick.querySelectorAll(".ai-qbtn").length;
+    quickMeta.textContent = total > 0
+      ? `${total} sugerencia${total!==1?"s":""}`
+      : "sin sugerencias";
+  }
+  function setQuickExpanded(expanded, persist=true){
+    quickShell?.classList.toggle("is-open", expanded);
+    quickToggle?.setAttribute("aria-expanded", expanded ? "true" : "false");
+    quickToggle?.setAttribute("title", expanded ? "Ocultar presets y preguntas rápidas" : "Mostrar presets y preguntas rápidas");
+    if(persist) writeQuickPref(expanded);
+  }
+  setQuickExpanded(readQuickPref(), false);
+  updateQuickMeta();
+  if(quickToggle){
+    quickToggle.addEventListener("click", ()=>{
+      const expanded = quickShell?.classList.contains("is-open");
+      setQuickExpanded(!expanded);
+    });
+  }
+  if(quick){
+    new MutationObserver(updateQuickMeta).observe(quick, { childList:true });
+    quick.addEventListener("click", ev=>{
+      const btn = ev.target.closest(".ai-qbtn");
+      if(!btn) return;
+      input.value = btn.dataset.q || "";
+      input.focus();
+    });
+  }
+
+  function refreshBadge(){
+    if(!badge) return;
+    const ctx=getCtx(), f=ctx?.filters||{}, p=ctx?.period||{};
+    const n=[f.coordinador,f.agente,f.cliente,f.grupo,f.marca,f.region].filter(Boolean).length
+            +(f.codProd?.length||0)+((p.desde||p.hasta)?1:0);
+    badge.textContent = n>0 ? `${n} filtro${n!==1?"s":""} activo${n!==1?"s":""}` : "sin filtros";
+    badge.classList.toggle("active",n>0);
+    if(hBadge) {
+      hBadge.classList.toggle("visible", conversationHistory.length>0);
+      hBadge.title = `${conversationHistory.length/2|0} intercambio${conversationHistory.length/2!==1?"s":""}`;
+    }
+  }
+  refreshBadge();
+  setInterval(refreshBadge, 2500);
+
+  fab.addEventListener("click", ()=>{
+    panel.classList.toggle("open");
+    if(panel.classList.contains("open")){
+      refreshBadge();
+      input.focus();
+      // v39: actualizar presets según tab activa
+      const activeTab = document.querySelector(".tab.on")?.dataset?.tab || "detalle";
+      updatePresetsForTab(activeTab);
+    }
+  });
+  document.getElementById("aiClose")?.addEventListener("click", ()=>panel.classList.remove("open"));
+  document.getElementById("aiClear")?.addEventListener("click", ()=>{
+    msgs.innerHTML="";
+    conversationHistory=[];
+    addInitialMsg(msgs);
+    refreshBadge();
+    setStatus("Historial limpiado");
+  });
+  input.addEventListener("keydown", async ev=>{
+    if((ev.ctrlKey||ev.metaKey)&&ev.key==="Enter"){ ev.preventDefault(); await doSubmit(); }
+  });
+  send.addEventListener("click", doSubmit);
+
+  // ── SUBMIT compatible con JSON y SSE ───────────────────────────────
+  async function doSubmit(){
+    const q=input.value.trim();
+    if(!q||send.disabled) return;
+    send.disabled=true; fab.classList.add("busy");
+    setStatus("Consultando datos...");
+    addMsg(msgs,"user",q);
+    input.value="";
+
+    const botEl=document.createElement("div");
+    botEl.className="ai-m bot streaming";
+    botEl.innerHTML='<span class="ai-cursor">▌</span>';
+    msgs.appendChild(botEl);
+    msgs.scrollTop=msgs.scrollHeight;
+
+    let fullText="", metaInfo=null;
+
+    try{
+      const ctx = useCtx.checked ? getCtx() : {};
+      const headers = {"content-type":"application/json"};
+      const authToken = getAiAuthToken();
+      if(authToken) headers.Authorization = `Basic ${authToken}`;
+
+      const res = await fetch(`${apiBase}/ai/chat`,{
+        method:"POST",
+        headers,
+        body:JSON.stringify({
+          message: q,
+          context: ctx,
+          history: conversationHistory,
+          clientVersion: AI_V,
+        }),
+      });
+
+      const contentType = String(res.headers.get("content-type")||"").toLowerCase();
+      if(!res.ok){
+        let errPayload = {};
+        if(contentType.includes("application/json")){
+          errPayload = await res.json().catch(()=>({}));
+        } else {
+          const rawError = await res.text().catch(()=>"");
+          errPayload = rawError ? { message: rawError } : {};
+        }
+        throw new Error(buildAiErrorMessage(errPayload, `HTTP ${res.status}`));
+      }
+
+      if(contentType.includes("application/json")){
+        const payload = await res.json().catch(()=>({}));
+        if(payload?.ok === false){
+          throw new Error(buildAiErrorMessage(payload, "La IA no devolvió una respuesta."));
+        }
+
+        const normalized = normalizeAiJsonPayload(payload);
+        metaInfo = {
+          model: normalized.meta.model,
+          tablesQueried: [],
+          entities: {},
+          historyLen: normalized.meta.historyUsed || 0,
+        };
+        fullText = normalized.answer;
+        // v39: capturar exportData si viene en la respuesta
+        if(payload?.exportData) metaInfo.exportData = payload.exportData;
+
+        if(!fullText){
+          throw new Error(buildAiErrorMessage(payload, "La IA no devolvió una respuesta."));
+        }
+      } else {
+        if(!res.body) throw new Error("La respuesta del asistente llegó vacía.");
+
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+
+        setStatus("Recibiendo respuesta...");
+
+        while(true){
+          const {done,value} = await reader.read();
+          if(done) break;
+          buf += decoder.decode(value,{stream:true});
+          const lines = buf.split("\n");
+          buf = lines.pop();
+
+          for(const line of lines){
+            if(!line.startsWith("data: ")) continue;
+            const raw = line.slice(6).trim();
+            if(!raw || raw==="[DONE]") continue;
+            try{
+              const parsed = JSON.parse(raw);
+              if(parsed.type==="meta"){
+                metaInfo = parsed;
+              } else if(parsed.type==="error"){
+                throw new Error(parsed.message||"Error del modelo");
+              } else if(parsed.response){
+                fullText += parsed.response;
+                botEl.innerHTML = escHtml(fullText)+'<span class="ai-cursor">▌</span>';
+                msgs.scrollTop = msgs.scrollHeight;
+              }
+            } catch(parseErr){
+              console.warn("[AI] Evento SSE ignorado:", parseErr);
+            }
+          }
+        }
+      }
+
+      if(!fullText){
+        throw new Error("La IA no devolvió texto para mostrar.");
+      }
+
+      botEl.classList.remove("streaming");
+      renderFinal(botEl, fullText);
+      // v39: mostrar botones de exportación si hay exportData
+      if(metaInfo?.exportData) renderExportBar(botEl, metaInfo.exportData, fullText);
+      msgs.scrollTop=msgs.scrollHeight;
+
+      conversationHistory.push({role:"user",content:q});
+      conversationHistory.push({role:"assistant",content:fullText});
+      if(conversationHistory.length>6) conversationHistory=conversationHistory.slice(-6);
+
+      setStatus(buildAiStatusFromMeta(metaInfo));
+      refreshBadge();
+
+    }catch(err){
+      botEl.classList.remove("streaming");
+      if(!fullText){
+        botEl.remove();
+        addMsg(msgs,"err",`Error: ${err.message||String(err)}`);
+      } else {
+        renderFinal(botEl, fullText);
+        addMsg(msgs,"err","Conexión interrumpida. Respuesta parcial mostrada.");
+      }
+      setStatus("Error");
+      console.error("[AI v9]",err);
+    }finally{
+      send.disabled=false; fab.classList.remove("busy"); input.focus();
+    }
+  }
+}
+
+// ── HELPERS DE RENDERIZADO ──────────────────────────────────────────
+// ── RENDERIZADO COMPLETO DE MARKDOWN (v39) ────────────────────────────────
+function renderFinal(el, text){
+  const raw = String(text||"");
+
+  // Escapar HTML base
+  let html = raw
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+
+  // Tablas Markdown: | Col | Col | → <table>
+  html = html.replace(/((?:\|.+\|\n?)+)/g, tableBlock => {
+    const rows = tableBlock.trim().split("\n").filter(r => r.trim());
+    if(rows.length < 2) return tableBlock;
+    const isSepar = r => /^\|[\s|:-]+\|$/.test(r.trim());
+    const parseRow = r => r.trim().replace(/^\||\|$/g,"").split("|").map(c=>c.trim());
+    const headers = parseRow(rows[0]);
+    const dataRows = rows.slice(1).filter(r => !isSepar(r));
+    const thead = `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead>`;
+    const tbody = `<tbody>${dataRows.map(r=>`<tr>${parseRow(r).map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>`;
+    return `<table class="ai-md-table">${thead}${tbody}</table>\n`;
+  });
+
+  // Cursiva con _ ... _
+  html = html.replace(/_(.*?)_/g, "<em>$1</em>");
+
+  // Negritas
+  html = html.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+
+  // Encabezados ### → h3, ## → h2, # → h2
+  html = html.replace(/^### (.+)$/gm,"<h3 class=\"ai-md-h3\">$1</h3>");
+  html = html.replace(/^## (.+)$/gm,"<h2 class=\"ai-md-h2\">$1</h2>");
+  html = html.replace(/^# (.+)$/gm,"<h2 class=\"ai-md-h2\">$1</h2>");
+
+  // Separadores ---
+  html = html.replace(/^---+$/gm,"<hr class=\"ai-md-hr\">");
+
+  // Listas: líneas que empiezan con - o •
+  html = html.replace(/^[-•]\s+(.+)$/gm,"<li>$1</li>");
+  html = html.replace(/(<li>[\s\S]*?<\/li>(?:\n|$))+/g, match => `<ul>${match}</ul>`);
+
+  // Saltos de línea (excepto dentro de tablas y listas que ya tienen estructura)
+  html = html.replace(/\n(?!<)/g,"<br>");
+  // Limpiar <br> dobles antes de elementos de bloque
+  html = html.replace(/<br>(<(?:h[23]|ul|table|hr))/g,"$1");
+
+  el.innerHTML = html;
+}
+
+// ── BARRA DE EXPORTACIÓN (v39) ────────────────────────────────────────────
+function renderExportBar(msgEl, exportData, fullText){
+  const bar = document.createElement("div");
+  bar.className = "ai-export-bar";
+  bar.innerHTML = `
+    <span class="ai-export-label">Descargar</span>
+    <button type="button" class="ai-export-btn ai-export-pdf" title="Descargar como PDF">⬇ PDF</button>
+    <button type="button" class="ai-export-btn ai-export-csv" title="Descargar datos en CSV">⬇ CSV</button>
+    <button type="button" class="ai-export-btn ai-export-xlsx" title="Descargar datos en Excel">⬇ Excel</button>`;
+  msgEl.appendChild(bar);
+
+  bar.querySelector(".ai-export-pdf").addEventListener("click", ()=> downloadPdf(msgEl, fullText));
+  bar.querySelector(".ai-export-csv").addEventListener("click", ()=> downloadCsv(exportData));
+  bar.querySelector(".ai-export-xlsx").addEventListener("click", ()=> downloadExcel(exportData));
+}
+
+function downloadPdf(msgEl, fullText){
+  // Abrir ventana de impresión solo con el contenido del mensaje
+  const fecha = new Date().toLocaleDateString("es-AR");
+  const win = window.open("","_blank","width=900,height=700");
+  if(!win) return;
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Informe Ventas Dash — ${fecha}</title>
+<style>
+  body{font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#111;padding:32px 40px;max-width:800px;margin:0 auto}
+  h1{font-size:18px;font-weight:bold;border-bottom:2px solid #b88734;padding-bottom:8px;margin-bottom:16px}
+  h2{font-size:15px;font-weight:bold;margin-top:20px;margin-bottom:8px;color:#333}
+  h3{font-size:13px;font-weight:bold;margin-top:14px;color:#555}
+  table{width:100%;border-collapse:collapse;margin:10px 0}
+  th{background:#f0e8d0;font-weight:bold;padding:6px 10px;border:1px solid #ccc;text-align:left;font-size:12px}
+  td{padding:5px 10px;border:1px solid #ddd;font-size:12px}
+  tr:nth-child(even) td{background:#fafafa}
+  .footer{margin-top:32px;font-size:10px;color:#888;border-top:1px solid #ddd;padding-top:8px}
+  ul{margin:6px 0;padding-left:20px}
+  li{margin:2px 0}
+  em{color:#555}
+  hr{border:none;border-top:1px solid #ddd;margin:14px 0}
+  strong{font-weight:bold}
+  @media print{body{padding:0}}
+</style>
+</head><body>
+<h1>Informe Ventas Dash</h1>
+<p style="font-size:11px;color:#888;margin-bottom:16px">${fecha} · Generado por el Asistente IA</p>
+${msgEl.innerHTML.replace(/<div class="ai-export-bar"[\s\S]*?<\/div>/,"")}
+<div class="footer">Ventas Dash · ${fecha}</div>
+</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{ win.print(); }, 600);
+}
+
+function downloadCsv(exportData){
+  if(!Array.isArray(exportData)||!exportData.length) return;
+  const sections = exportData.map(t => {
+    const header = t.headers.join(",");
+    const rows = (t.rows||[]).map(r => r.map(c=>'"'+String(c||"").replace(/"/g,'""')+'"').join(","));
+    return [t.title, header, ...rows].join("\n");
+  });
+  const csv = sections.join("\n\n");
+  const blob = new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ventas-informe-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+
+async function downloadExcel(exportData){
+  if(!Array.isArray(exportData)||!exportData.length) return;
+  try{
+    // Cargar SheetJS desde CDN de forma lazy
+    if(!window.XLSX){
+      await new Promise((resolve,reject)=>{
+        const s = document.createElement("script");
+        s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    const wb = window.XLSX.utils.book_new();
+    exportData.forEach(t => {
+      const wsData = [t.headers, ...(t.rows||[])];
+      const ws = window.XLSX.utils.aoa_to_sheet(wsData);
+      // Ancho de columnas automático
+      ws["!cols"] = t.headers.map((_,i)=>({
+        wch: Math.max(12, ...(t.rows||[]).map(r=>String(r[i]||"").length), t.headers[i].length)
+      }));
+      const sheetName = (t.title||"Datos").slice(0,31).replace(/[\/\\?*\[\]]/g,"_");
+      window.XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+    const filename = `ventas-informe-${new Date().toISOString().slice(0,10)}.xlsx`;
+    window.XLSX.writeFile(wb, filename);
+  } catch(err){
+    console.error("[AI export Excel]", err);
+    alert("No se pudo generar el Excel. Intentá con el CSV.");
+  }
+}
+
+// ── PRESETS CONTEXTUALES POR TAB (v39) ───────────────────────────────────
+function updatePresetsForTab(tabName){
+  const quick = document.getElementById("aiQuick");
+  if(!quick) return;
+  const presets = (typeof AI_PRESETS_BY_TAB!=="undefined" && AI_PRESETS_BY_TAB[tabName])
+    || (typeof AI_PRESETS_DEFAULT!=="undefined" ? AI_PRESETS_DEFAULT : []);
+  if(!presets.length) return;
+  quick.innerHTML = presets.map(p=>
+    `<button class="ai-qbtn" data-q="${escHtml(p.q)}">${escHtml(p.label)}</button>`
+  ).join("");
+}
+
+function escHtml(t){
+  return String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function addMsg(container,role,text){
+  const el=document.createElement("div");
+  el.className=`ai-m ${role}`;
+  if(role==="bot") renderFinal(el,text);
+  else el.textContent=text;
+  container.appendChild(el);
+  container.scrollTop=container.scrollHeight;
+}
+function setStatus(t){ const e=document.getElementById("aiStatus"); if(e) e.textContent=t; }
+
+function getAiAuthToken(){
+  try{
+    const sessionToken = sessionStorage.getItem(AI_AUTH_STORAGE_KEY);
+    if(sessionToken) return String(sessionToken).trim();
+  }catch(_err){}
+  try{
+    const legacyToken = localStorage.getItem(AI_AUTH_STORAGE_KEY);
+    if(legacyToken) return String(legacyToken).trim();
+  }catch(_err){}
+  return "";
+}
+
+function buildAiErrorMessage(err, fallback){
+  if(typeof err === "string" && err.trim()) return err.trim();
+  if(err && typeof err === "object"){
+    if(typeof err.mensaje === "string" && err.mensaje.trim()) return err.mensaje.trim();
+    if(typeof err.error === "string" && err.error.trim()) return err.error.trim();
+    if(typeof err.message === "string" && err.message.trim()) return err.message.trim();
+  }
+  return fallback;
+}
+
+function buildAiStatusFromMeta(metaInfo){
+  if(!metaInfo || typeof metaInfo !== "object") return "✓ IA";
+
+  const parts=[];
+  if(metaInfo.entities?.coordinador) parts.push(`coord:${metaInfo.entities.coordinador}`);
+  if(metaInfo.entities?.region)      parts.push(`región:${metaInfo.entities.region}`);
+  if(metaInfo.entities?.grupo)       parts.push(`grupo:${metaInfo.entities.grupo}`);
+  if(Array.isArray(metaInfo.tablesQueried) && metaInfo.tablesQueried.length) parts.push(metaInfo.tablesQueried.join(", "));
+
+  const modelRaw = String(metaInfo.model || metaInfo.modelUsed || "IA");
+  const modelShort = modelRaw.replace("@cf/meta/","").replace("-instruct","");
+  return `✓ ${modelShort}${parts.length?" · "+parts.join(" · "):""}`;
+}
+
+function normalizeAiJsonPayload(payload){
+  const answer = String(payload?.answer || payload?.response || payload?.result?.response || payload?.choices?.[0]?.message?.content || "").trim();
+  return {
+    ok: payload?.ok !== false,
+    answer,
+    meta: {
+      model: payload?.model || payload?.modelUsed || null,
+      contextUsed: payload?.contextUsed || null,
+      historyUsed: payload?.contextUsed?.historyUsed || 0,
+    },
+  };
+}
+
+// ── CONTEXTO DEL TABLERO ────────────────────────────────────────────
+function getCtx(){
+  const fromApp = window.VentasDashAIContext?.getSnapshot ? window.VentasDashAIContext.getSnapshot() : null;
+  const gv=id=>{const e=document.getElementById(id);return e?String(e.value||"").trim():"";};
+  const gt=id=>{const e=document.getElementById(id);if(!e)return"";
+    if(e.tagName==="SELECT"){const o=e.options[e.selectedIndex];return String(o?.text||"").trim();}
+    return String(e.value||e.textContent||"").trim();};
+  const fallback={
+    app:"Ventas Dashboard",
+    activeTab:document.querySelector(".tab.on")?.dataset?.tab||"detalle",
+    period:{desde:gv("fDesde"),hasta:gv("fHasta")},
+    filters:{
+      coordinador:gv("sCoord"),coordinadorLabel:gt("sCoord"),
+      agente:gv("sAgte"),agenteLabel:gt("sAgte"),
+      cliente:gv("sClie"),clienteLabel:gv("iClie")||gt("sClie"),
+      grupo:gv("sGrp"),grupoLabel:gt("sGrp"),
+      marca:gv("sMrc"),marcaLabel:gt("sMrc"),
+      region:"",regionLabel:"",
+      codProd:(()=>{const e=document.getElementById("sCodProd");
+        return e?Array.from(e.selectedOptions||[]).map(o=>String(o.value||"").trim()).filter(Boolean):[];})(),
+      codProdLabels:Array.from(document.querySelectorAll("#prodChips .search-chip"))
+        .map(c=>c.textContent.replace("✕","").trim()).filter(Boolean),
+      projGroups:Array.from(document.querySelectorAll("[data-proj-group].active")).map(n=>String(n.getAttribute("data-proj-group")||"").trim()).filter(Boolean),
+      detailGroups:Array.from(document.querySelectorAll("[data-detail-group].active")).map(n=>String(n.getAttribute("data-detail-group")||"").trim()).filter(Boolean),
+      extraColumnFilters:{}
+    },
+  };
+
+  if(!fromApp || typeof fromApp!=="object") return fallback;
+
+  return {
+    app:"Ventas Dashboard",
+    activeTab:String(fromApp.activeTab||fallback.activeTab||"detalle").trim()||"detalle",
+    period:{
+      desde:String(fromApp.period?.desde||fallback.period.desde||"").trim(),
+      hasta:String(fromApp.period?.hasta||fallback.period.hasta||"").trim()
+    },
+    filters:{
+      ...fallback.filters,
+      ...(fromApp.filters||{}),
+      codProd:Array.isArray(fromApp.filters?.codProd)?fromApp.filters.codProd:fallback.filters.codProd,
+      projGroups:Array.isArray(fromApp.filters?.projGroups)?fromApp.filters.projGroups:fallback.filters.projGroups,
+      detailGroups:Array.isArray(fromApp.filters?.detailGroups)?fromApp.filters.detailGroups:fallback.filters.detailGroups,
+      extraColumnFilters:(fromApp.filters?.extraColumnFilters&&typeof fromApp.filters.extraColumnFilters==="object")
+        ? fromApp.filters.extraColumnFilters
+        : fallback.filters.extraColumnFilters,
+      codProdLabels:fallback.filters.codProdLabels
+    },
+    detailExplorer: fromApp.detailExplorer || null,
+    projectionCompare: fromApp.projectionCompare || null,
+    tablePreview: Array.isArray(fromApp.tablePreview) ? fromApp.tablePreview : []
+  };
+}
+</script>
+
+<!-- ═══ v31: módulos de mejora (no bloquean el render principal) ═══ -->
+<script src="js/v31/empty-states.js" defer></script>
+<script src="js/v31/kpi-delta.js" defer></script>
+<script src="js/v31/ai-suggestions.js" defer></script>
+<script src="js/v31/ai-feedback.js" defer></script>
+<script src="js/v31/ai-enhancements.js" defer></script>
+<script src="js/v31/bookmarks.js" defer></script>
+<script src="js/v31/multi-sort.js" defer></script>
+<script src="js/v31/row-drawer.js" defer></script>
+<script src="js/v31/chart-crossfilter.js" defer></script>
+</body>
+</html>

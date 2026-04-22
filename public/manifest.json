@@ -1,0 +1,9 @@
+{
+  "name": "Ventas Dashboard",
+  "short_name": "Ventas",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d0f18",
+  "theme_color": "#0d0f18",
+  "icons": []
+}
